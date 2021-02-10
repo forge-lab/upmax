@@ -1,14 +1,20 @@
-Running the partition-based algorithm on formulas with partitions:
-Usage: ./open-wbo -formula=2 -algorithm=3 <formula>
+WCNF formula without user provided partitions (default):
+```-formula = 0```
 
-Running the partition-based algorithm on formulas without partitions (the algorithm will automatically find a partition using graph-based approaches):
-Usage: ./open-wbo -formula=0 -algorithm=3 <formula>
+WCNF formula with user provided partitions (only used by the user-based algorithm; the other algorithms will ignore the user partition):
+```-formula = 2```
 
-Using the same algorithm but without partitions:
-Usage: ./open-wbo -formula=0 -algorithm=2 <formula>
+Running the user-based partition algorithm:
+```./open-wbo -formula=2 -algorithm=4 <formula>```
 
-# formula = 0 (no partition) ; formula = 2 (partitions)
-# algorithm = 2 (no partition) ; algorithm = 3 (partitions)
+Running the auto-generated partition algorithm:
+```./open-wbo -formula=0 -algorithm=3 <formula>```
 
-For additional options see:
-./open-wbo --help-verb
+Running the baseline algorithm without partitions:
+```./open-wbo -formula=0 -algorithm=2 <formula>```
+
+Find all optimal solutions that falsify a different set of soft clauses:
+```-all-opt```
+
+Find all optimal solutions taking into consideration all variables of the formula:
+```-all-opt -all-vars```
