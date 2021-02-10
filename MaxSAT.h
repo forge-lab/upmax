@@ -1,11 +1,11 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
  * MiniSat,  Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
  *           Copyright (c) 2007-2010, Niklas Sorensson
- * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,6 +83,9 @@ public:
     print = false;
     unsat_soft_file = NULL;
     json_file = NULL;
+
+    _all_opt_sols = false;
+    _n_opt_sols = 0;
   }
 
   MaxSAT() {
@@ -108,6 +111,9 @@ public:
     print = false;
     unsat_soft_file = NULL;
     json_file = NULL;
+
+    _all_var_sols = false;
+    _all_opt_sols = false;
   }
 
   virtual ~MaxSAT() {
@@ -120,6 +126,8 @@ public:
   // Print configuration of the MaxSAT solver.
   // virtual void printConfiguration();
   void printConfiguration();
+
+  StatusCode enumerate_opt(Solver* solver, vec<Lit>& assumptions);
 
   // Encoding information.
   void print_AMO_configuration(int encoding);
@@ -278,6 +286,14 @@ protected:
 
   // Greater than comparator.
   bool static greaterThan(uint64_t i, uint64_t j) { return (i > j); }
+
+  // All solutions
+  int _n_opt_sols;
+
+public:
+  bool _all_opt_sols;
+  bool _all_var_sols;
+
 };
 } // namespace openwbo
 

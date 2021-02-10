@@ -96,9 +96,10 @@ StatusCode MSU3::MSU3_iterative() {
         for (int i = 0; i < objFunction.size(); i++)
           assumptions.push(~objFunction[i]);
       } else {
-        assert(lbCost == newCost);
+        //assert(lbCost == newCost);
         printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
+        return enumerate_opt(solver, assumptions);
+        //return _OPTIMUM_;
       }
     }
 
@@ -113,13 +114,13 @@ StatusCode MSU3::MSU3_iterative() {
         return _UNSATISFIABLE_;
       }
 
-      if (lbCost == ubCost) {
-        assert(nbSatisfiable > 0);
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       sumSizeCores += solver->conflict.size();
 

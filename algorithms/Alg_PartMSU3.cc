@@ -536,7 +536,8 @@ StatusCode PartMSU3::PartMSU3_sequential() {
               true; // to know that unit partitions are being considered
         } else {
           printAnswer(_OPTIMUM_);
-          return _OPTIMUM_;
+          return enumerate_opt(solver, assumptions);
+          //return _OPTIMUM_;
         }
       } else {
         assert(merge_strategy == _PART_SEQUENTIAL_SORTED_);
@@ -557,7 +558,8 @@ StatusCode PartMSU3::PartMSU3_sequential() {
           }
         } else {
           printAnswer(_OPTIMUM_);
-          return _OPTIMUM_;
+          return enumerate_opt(solver, assumptions);
+          //return _OPTIMUM_;
         }
       }
     }
@@ -573,13 +575,13 @@ StatusCode PartMSU3::PartMSU3_sequential() {
         return _UNSATISFIABLE_;
       }
 
-      if (lbCost == ubCost) {
-        assert(nbSatisfiable > 0);
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       sumSizeCores += solver->conflict.size();
 
@@ -832,7 +834,8 @@ StatusCode PartMSU3::PartMSU3_binary() {
       } else {
         assert(guide_tree.empty());
         printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
+        return enumerate_opt(solver, assumptions);
+        //return _OPTIMUM_;
       }
     }
 
@@ -848,13 +851,13 @@ StatusCode PartMSU3::PartMSU3_binary() {
       if (verbosity > 0)
         printf("c LB : %-12" PRIu64 "\n", lbCost);
 
-      if (lbCost == ubCost) {
-        assert(nbSatisfiable > 0);
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       sumSizeCores += solver->conflict.size();
 

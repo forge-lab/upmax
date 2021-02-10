@@ -75,6 +75,7 @@ StatusCode PWCNFMSU3::search_single() {
           assumptions.push(~objFunction[i]);
       } else {
         assert(lbCost == newCost);
+        printAnswer(_OPTIMUM_);
         return enumerate_opt(solver, assumptions);
         //printAnswer(_OPTIMUM_);
         //return _OPTIMUM_;
@@ -313,39 +314,6 @@ int PWCNFMSU3::merge_part(int mode, vec<Lit>& encodingAssumptions) {
   return p2;
 }
 
-StatusCode PWCNFMSU3::enumerate_opt(Solver* solver, vec<Lit>& assumptions) {
-
-  _n_opt_sols = 1;
-
-  if (_all_opt_sols){
-
-    // formula is in a satisfiable state
-    assert (solver->model.size() > 0);
-    vec<Lit> block_model;
-
-    lbool res = l_True;
-    while (res == l_True){
-      // block model
-      block_model.clear();
-      for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-        for (int j = 0; j < maxsat_formula->getSoftClause(i).relaxation_vars.size(); j++){
-          int v = var(maxsat_formula->getSoftClause(i).relaxation_vars[j]);
-          block_model.push(mkLit(v,solver->model[v]==l_True));
-        }
-      }
-      solver->addClause(block_model);
-
-      res = searchSATSolver(solver, assumptions);
-      _n_opt_sols++;
-    }
-  }
-
-  printf("c Optimal Solutions: %d\n",_n_opt_sols);
-  return _OPTIMUM_;
-
-}
-
-
 StatusCode PWCNFMSU3::search_part() {
   
   int current_partition = 0;
@@ -549,7 +517,7 @@ StatusCode PWCNFMSU3::search_part() {
       }
 
       if (remaining_partitions == 1){
-        //printAnswer(_OPTIMUM_);
+        printAnswer(_OPTIMUM_);
         //return _OPTIMUM_;
         return enumerate_opt(solver, assumptions);
       } else {

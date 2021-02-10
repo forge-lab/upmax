@@ -162,6 +162,7 @@ int main(int argc, char **argv) {
 #endif
 
     BoolOption allopts("Open-WBO", "all-opt", "Finds all optimal solutions.\n", false);
+    BoolOption allvars("Open-WBO", "all-vars", "Uses all variables to find optimal solutions.\n", false);
 
     BoolOption printmodel("Open-WBO", "print-model", "Print model.\n", true);
 
@@ -377,6 +378,8 @@ int main(int argc, char **argv) {
     S->setPrintSoft((const char *)printsoft);
     S->setJson((const char *) json);
     S->setInitialTime(initial_time);
+    S->_all_opt_sols = allopts;
+    S->_all_var_sols = allvars;
 
     mxsolver = S;
     mxsolver->setPrint(true);

@@ -3,7 +3,7 @@
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2020, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,10 +55,6 @@ public:
     _partitions = 0;
     _mode = mode;
     _limit = limit;
-
-    _all_opt_sols = false;
-    _n_opt_sols = 0;
-
   }
 
   virtual ~PWCNFMSU3() {
@@ -106,7 +102,7 @@ protected:
   void createPartitions();
   int merge_part(int mode, vec<Lit>& assump);
 
-  StatusCode enumerate_opt(Solver* solver, vec<Lit>& assumptions);
+  //StatusCode enumerate_opt(Solver* solver, vec<Lit>& assumptions);
 
   Solver *solver; // SAT Solver used as a black box.
   Encoder encoder; // Interface for the encoder of constraints to CNF.
@@ -133,11 +129,7 @@ protected:
   vec<Encoder*> encoder_partitions;
   vec< vec<int> > merged_partitions;
   vec< vec<Lit> > lits_partitions;
-  vec<bool> active_partitions;
-
-  bool _all_opt_sols;
-  int _n_opt_sols;
-  
+  vec<bool> active_partitions;  
   
   int _partitions;
   int _mode;

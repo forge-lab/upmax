@@ -1,9 +1,9 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -461,7 +461,7 @@ void MaxSAT::serializeStats(int type) { // TODO: write Python bindings instead
     fprintf(res, "{\n");
 
     fprintf(res, "\"rtime\" : %f,\n", totalTime - initialTime);
-    fprintf(res, "\"best_solution\" : %lu,\n", ubCost);
+    fprintf(res, "\"best_solution\" : %llu,\n", ubCost);
     fprintf(res, "\"num_sat_calls\" : %d,\n", nbSatisfiable);
     fprintf(res, "\"num_unsat_calls\" : %d,\n", nbCores);
     fprintf(res, "\"avg_core_size\" : %f,\n", avgCoreSize);
@@ -652,4 +652,49 @@ std::pair<uint64_t, int> MaxSAT::getLB() {
   }
 
   return std::make_pair(lb, nb_relaxed);
+}
+
+
+StatusCode MaxSAT::enumerate_opt(Solver* solver, vec<Lit>& assumptions) {
+
+  _n_opt_sols = 1;
+
+  if (_all_opt_sols){
+
+    // formula is in a satisfiable state
+    assert (solver->model.size() > 0);
+    uint64_t optCost = computeCostModel(solver->model);
+    uint64_t newCost = optCost;
+    vec<Lit> block_model;
+
+    lbool res = l_True;
+    while (res == l_True){
+      // block model
+      newCost = computeCostModel(solver->model);
+      if (newCost != optCost)
+        break;
+      block_model.clear();
+
+      if (_all_var_sols){
+        for (int i = 0; i < maxsat_formula->nInitialVars(); i++)
+            block_model.push(mkLit(i,solver->model[i]==l_True));
+      } else {
+        for (int i = 0; i < maxsat_formula->nSoft(); i++) {
+          for (int j = 0; j < maxsat_formula->getSoftClause(i).relaxation_vars.size(); j++){
+            int v = var(maxsat_formula->getSoftClause(i).relaxation_vars[j]);
+            block_model.push(mkLit(v,solver->model[v]==l_True));
+          }
+        }
+      }
+      if (block_model.size() > 0)
+        solver->addClause(block_model);
+
+      res = searchSATSolver(solver, assumptions);
+      _n_opt_sols++;
+    }
+  }
+
+  printf("c Optimal Solutions: %d\n",_n_opt_sols);
+  return _OPTIMUM_;
+
 }
