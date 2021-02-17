@@ -288,7 +288,12 @@ protected:
   bool static greaterThan(uint64_t i, uint64_t j) { return (i > j); }
 
   // All solutions
-  int _n_opt_sols;
+  int static _n_opt_sols;
+  // Signal handler
+  void static SIGINT_all_opt_exit(int signum) {
+    printf("c Optimal Solutions: %d\n",_n_opt_sols);
+    exit(_OPTIMUM_);
+  }
 
 public:
   bool _all_opt_sols;
