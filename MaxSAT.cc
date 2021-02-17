@@ -26,6 +26,7 @@
  */
 
 #include "MaxSAT.h"
+#include <signal.h>
 
 #include <sstream>
 #include <iostream>
@@ -53,6 +54,8 @@ void MaxSAT::setInitialTime(double initial) {
  // SAT solver interface
  //
  ************************************************************************************************/
+
+int MaxSAT::_n_opt_sols;
 
 // Creates an empty SAT Solver.
 Solver *MaxSAT::newSATSolver() {
@@ -660,6 +663,11 @@ StatusCode MaxSAT::enumerate_opt(Solver* solver, vec<Lit>& assumptions) {
   _n_opt_sols = 1;
 
   if (_all_opt_sols){
+
+    // add signal handler
+    signal(SIGXCPU, SIGINT_all_opt_exit);
+    signal(SIGTERM, SIGINT_all_opt_exit);
+    signal(SIGINT, SIGINT_all_opt_exit);
 
     // formula is in a satisfiable state
     assert (solver->model.size() > 0);
