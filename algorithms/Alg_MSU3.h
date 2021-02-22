@@ -86,6 +86,7 @@ protected:
   StatusCode MSU3_blocking();  // Incremental Blocking MSU3.
   StatusCode MSU3_weakening(); // Incremental Weakening MSU3.
   StatusCode MSU3_iterative(); // Incremental Iterative Encoding MSU3.
+  StatusCode MSU3_bmo(); 
 
   // Other
   void initRelaxation(); // Relaxes soft clauses.

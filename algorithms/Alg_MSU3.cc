@@ -176,16 +176,218 @@ StatusCode MSU3::MSU3_iterative() {
   return _ERROR_;
 }
 
+StatusCode MSU3::MSU3_bmo() {
+    assert(orderWeights.size() > 0);
+
+    printf("c Number of priority objectives %ld\n",orderWeights.size());
+
+  if (encoding != _CARD_TOTALIZER_) {
+    if(print) {
+      printf("Error: Currently algorithm MSU3 with iterative encoding only "
+             "supports the totalizer encoding.\n");
+      printf("s UNKNOWN\n");
+    }
+    throw MaxSATException(__FILE__, __LINE__, "MSU3 only supports totalizer");
+    return _UNKNOWN_;
+  }
+
+  lbool res = l_True;
+  initRelaxation();
+  solver = rebuildSolver();
+  vec<Lit> assumptions;
+  vec<Lit> joinObjFunction;
+  vec<Lit> currentObjFunction;
+  vec<Lit> encodingAssumptions;
+
+  vec<Lit> lastAssumptions;
+  std::set<int> lastSoft;
+
+  vec<Encoder*> bmo_encoder;
+  for (int i = 0; i < orderWeights.size(); i++){
+    bmo_encoder.push(new Encoder());
+    bmo_encoder[bmo_encoder.size()-1]->setIncremental(_INCREMENTAL_ITERATIVE_);
+  }
+
+  //encoder.setIncremental(_INCREMENTAL_ITERATIVE_);
+  int current_bmo_function = 0;
+
+  activeSoft.growTo(maxsat_formula->nSoft(), false);
+  for (int i = 0; i < maxsat_formula->nSoft(); i++)
+    coreMapping[getAssumptionLit(i)] = i;
+
+  for (;;) {
+
+    res = searchSATSolver(solver, assumptions);
+    if (res == l_True) {
+      nbSatisfiable++;
+      uint64_t newCost = computeCostModel(solver->model);
+      saveModel(solver->model);
+      printBound(newCost);
+
+      ubCost = newCost;
+
+      if (nbSatisfiable == 1) {
+        // only add assumptions for the first level
+        assumptions.clear();
+        lastAssumptions.clear();
+
+        printf("c Priority function %d/%ld with weight %ld\n", current_bmo_function+1,orderWeights.size(), orderWeights[current_bmo_function]);
+        for (int i = 0; i < objFunction.size(); i++){
+          if (coeffs[i] == orderWeights[current_bmo_function]){
+            assumptions.push(~objFunction[i]);
+            lastAssumptions.push(~objFunction[i]); // this takes care of the case where the opt is 0 for this function
+          }
+        }
+        //printf("assumptions = %d\n",assumptions.size());
+      } else {
+        //assert(lbCost == newCost);
+        if (current_bmo_function == orderWeights.size()-1){
+          printAnswer(_OPTIMUM_);
+          return enumerate_opt(solver, assumptions);
+        } else {
+          // next function
+          lbCost = 0;
+          
+          // reset soft clause and fix to 0 r_i that did not appear in a core
+          for (int i = 0; i < maxsat_formula->nSoft(); i++) {
+            if (!activeSoft[i]){
+                if (maxsat_formula->getSoftClause(i).weight == orderWeights[current_bmo_function]){
+                  vec<Lit> uclause;
+                  uclause.push(~getRelaxationLit(i));
+                  solver->addClause(uclause);
+                }
+            } else activeSoft[i] = false;
+          }
+
+          // fix the values for the last cardinality constraint
+          for (int i = 0; i < lastAssumptions.size(); i++){
+            vec<Lit> uclause;
+            uclause.push(lastAssumptions[i]);
+            solver->addClause(uclause);
+          }
+
+          lastAssumptions.clear();
+          lastSoft.clear();
+
+          current_bmo_function++;
+          assumptions.clear();
+          encodingAssumptions.clear();
+
+          printf("c Priority function %d/%ld with weight %ld\n", current_bmo_function+1,orderWeights.size(),orderWeights[current_bmo_function]);
+          for (int i = 0; i < objFunction.size(); i++){
+            if (coeffs[i] == orderWeights[current_bmo_function]){
+              assumptions.push(~objFunction[i]);
+              lastAssumptions.push(~objFunction[i]); // this takes care of the case where the opt is 0 for this function
+            }
+          }
+        }
+        //return _OPTIMUM_;
+      }
+    }
+
+    if (res == l_False) {
+      lbCost++;
+      nbCores++;
+      if (verbosity > 0)
+        printf("c LB : %-12" PRIu64 "\n", lbCost);
+
+      if (nbSatisfiable == 0) {
+        printAnswer(_UNSATISFIABLE_);
+        return _UNSATISFIABLE_;
+      }
+
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
+
+      sumSizeCores += solver->conflict.size();
+
+      if (solver->conflict.size() == 0) {
+        printAnswer(_UNSATISFIABLE_);
+        return _UNSATISFIABLE_;
+      }
+
+      joinObjFunction.clear();
+      for (int i = 0; i < solver->conflict.size(); i++) {
+        if (coreMapping.find(solver->conflict[i]) != coreMapping.end()) {
+          //if (activeSoft[coreMapping[solver->conflict[i]]]) continue;
+          //printf("active soft = %d\n",coreMapping[solver->conflict[i]]);
+          assert(!activeSoft[coreMapping[solver->conflict[i]]]);
+          activeSoft[coreMapping[solver->conflict[i]]] = true;
+          lastSoft.insert(coreMapping[solver->conflict[i]]);
+          joinObjFunction.push(
+              getRelaxationLit(coreMapping[solver->conflict[i]]));
+        }
+      }
+
+      currentObjFunction.clear();
+      assumptions.clear();
+      for (int i = 0; i < maxsat_formula->nSoft(); i++) {
+        if (activeSoft[i])
+          currentObjFunction.push(getRelaxationLit(i));
+        else {
+          if (coeffs[i] == orderWeights[current_bmo_function]) 
+            assumptions.push(~getAssumptionLit(i));
+        }
+      }
+
+      if (verbosity > 0)
+        printf("c Relaxed soft clauses %d / %d\n", currentObjFunction.size(),
+               objFunction.size());
+
+      if (!bmo_encoder[current_bmo_function]->hasCardEncoding()) {
+        if (lbCost != (unsigned)currentObjFunction.size()) {
+          bmo_encoder[current_bmo_function]->buildCardinality(solver, currentObjFunction, lbCost);
+          bmo_encoder[current_bmo_function]->incUpdateCardinality(solver, currentObjFunction, lbCost,
+                                       encodingAssumptions);
+        }
+      } else {
+        // Incremental construction of the encoding.
+        if (joinObjFunction.size() > 0)
+          bmo_encoder[current_bmo_function]->joinEncoding(solver, joinObjFunction, lbCost);
+
+        // The right-hand side is constrained using assumptions.
+        // NOTE: 'encodingAsssumptions' is modified in 'incrementalUpdate'.
+        bmo_encoder[current_bmo_function]->incUpdateCardinality(solver, currentObjFunction, lbCost,
+                                     encodingAssumptions);
+      }
+      
+      lastAssumptions.clear();
+      encodingAssumptions.copyTo(lastAssumptions);
+      if (lastAssumptions.size() == 0){
+        // if there is nothing to restrict use the literals of the function
+        currentObjFunction.copyTo(lastAssumptions);
+      }
+
+      for (int i = 0; i < encodingAssumptions.size(); i++)
+        assumptions.push(encodingAssumptions[i]);
+    }
+  }
+  return _ERROR_;
+}
+
 // Public search method
 StatusCode MSU3::search() {
   if (maxsat_formula->getProblemType() == _WEIGHTED_) {
-    if(print) {
-      printf("Error: Currently algorithm MSU3 does not support weighted "
-             "MaxSAT instances.\n");
-      printf("s UNKNOWN\n");
-    }
-    throw MaxSATException(__FILE__, __LINE__, "MSU3 does not support weighted");
-    return _UNKNOWN_;
+
+     bool is_bmo = isBMO();
+     if (is_bmo){
+      printConfiguration();
+      return MSU3_bmo();
+     } else {
+
+      if(print) {
+        printf("Error: Currently algorithm MSU3 does not support weighted "
+               "MaxSAT instances.\n");
+        printf("s UNKNOWN\n");
+      }
+      throw MaxSATException(__FILE__, __LINE__, "MSU3 does not support weighted");
+      return _UNKNOWN_;
+     }
   }
 
   if (incremental_strategy == _INCREMENTAL_ITERATIVE_) {
@@ -306,6 +508,7 @@ void MSU3::initRelaxation() {
     s.relaxation_vars.push(l);
     s.assumption_var = l;
     objFunction.push(l);
+    coeffs.push(s.weight);
   }
 }
 
