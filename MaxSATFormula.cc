@@ -90,8 +90,11 @@ void MaxSATFormula::addSoftClause(uint64_t weight, vec<Lit> &lits,
   n_soft++;
 }
 
-void MaxSATFormula::setSoftClausePartition(int partition) {
-  soft_clauses[soft_clauses.size() - 1]._partition = partition;
+void MaxSATFormula::setSoftClausePartition(int partition, int id) {
+  int r = soft_clauses.size() - 1;
+  if (id != -1) r = id;
+  assert (r < soft_clauses.size());
+  soft_clauses[r]._partition = partition;
 }
 
 void MaxSATFormula::setHardClausePartition(int partition) {

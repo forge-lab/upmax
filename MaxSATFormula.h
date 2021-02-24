@@ -125,7 +125,7 @@ public:
   /*! Add a new soft clause. */
   void addSoftClause(uint64_t weight, vec<Lit> &lits);
 
-  void setSoftClausePartition(int partition);
+  void setSoftClausePartition(int partition, int id = -1);
   void setHardClausePartition(int partition);
 
   /*! Add a new soft clause with predefined relaxation variables. */

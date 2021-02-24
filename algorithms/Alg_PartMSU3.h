@@ -152,6 +152,9 @@ protected:
   void dumpGuideTree(vec<TreeNode *> &tree);
   void sortPartitions(vec<int> &out_parts);
 
+  StatusCode bmo_part();
+  StatusCode bmo_single();
+
   Solver *solver; // SAT Solver used as a black box.
 
   // Controls the type of graph that will be used in the partitioning algorithm

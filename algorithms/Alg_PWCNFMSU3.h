@@ -102,6 +102,9 @@ protected:
   void createPartitions();
   int merge_part(int mode, vec<Lit>& assump);
 
+  StatusCode bmo_part();
+  StatusCode bmo_single();
+
   //StatusCode enumerate_opt(Solver* solver, vec<Lit>& assumptions);
 
   Solver *solver; // SAT Solver used as a black box.
