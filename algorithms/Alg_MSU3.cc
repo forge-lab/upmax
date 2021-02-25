@@ -478,6 +478,20 @@ Solver *MSU3::rebuildSolver() {
     delete enc;
   }
 
+  // if r_i is set to true than the soft clause is not satisfied
+  // NOTE: this is only important if we are enumerating optimal solutions
+  for (int i = 0; i < maxsat_formula->nSoft(); i++){    
+    for (int j = 0; j < maxsat_formula->getSoftClause(i).clause.size(); j++){
+      for (int z = 0; z < maxsat_formula->getSoftClause(i).relaxation_vars.size(); z++){
+        vec<Lit> c1;
+        //printf("c = %d r= %d\n",maxsat_formula->getSoftClause(i).clause.size(),maxsat_formula->getSoftClause(i).relaxation_vars.size());
+        c1.push(~maxsat_formula->getSoftClause(i).clause[j]);
+        c1.push(~maxsat_formula->getSoftClause(i).relaxation_vars[z]);
+        S->addClause(c1);
+      }
+    }
+  }
+
   return S;
 }
 
