@@ -20,7 +20,7 @@ do
    echo $i
    s=$(python -c "import random; print(random.randint("$servers_min","$servers_max"))")
    v=$(python -c "import random; print(random.randint("$vms_min","$vms_max"))")
-   timeout 5s python3 generator.py -s $s -v $v > instances/$i-s$s-vms$v.vmc
+   timeout 5s python3 generator.py -s $s -v $v > instances/$i.vmc
    exit_status=$?
    if [[ $exit_status -eq 124 ]]; then
        i=$((i-1))
