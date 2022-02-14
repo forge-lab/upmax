@@ -20,5 +20,5 @@ do
    echo $g
    n=$(python -c "import random; print(random.randint("$n_min","$n_max"))")
    p=$(python -c "import random; print(round(random.uniform("$p_min","$p_max"),2))")
-   python generator.py -n $n -p $p > graphs/g$g-n$n-p$(python -c "print(round(100*"$p"))").g 
+   python3 generator.py -n $n -p $p > graphs/g$g-n$n-p$(python -c "print(round(100*"$p"))").g 
 done
