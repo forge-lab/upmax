@@ -28,7 +28,7 @@ n_nodes = None
 n_edges = None
 n_colors = None
 nodes = None
-edges = None
+edges = []
 soft = None
 hard = None
 
@@ -41,20 +41,15 @@ def parse_input(f):
     n_nodes, n_edges = int(n_nodes), int(n_edges)
     n_colors = n_nodes
     nodes = [[[]] for _ in range(n_colors+1)]
-    edges = [[] for _ in range(n_nodes+1)]
+    edges = []
 
     # reading edges
     for l in lines[1:]: 
         v1, v2 = l.split()
-        edges[int(v1)] = int(v2)
+        edges.append((int(v1),int(v2)))
+    # print(edges)
             
     hard = n_colors*2
-    # if args.pwcnf_colors == True:
-    #     parts = n_colors+1
-    #     parts = 1
-    # elif args.pwcnf_nodes == True:
-    #     parts = n_nodes+1
-    #     parts = 1
         
 def encoding():
     global formula
@@ -63,7 +58,7 @@ def encoding():
 
     #initializing variables
     v = 1
-    for n in range(1,n_colors+1):
+    for _ in range(1,n_colors+1):
         for v in range(1,n_nodes+1):
             nodes[v].append(num_vars)
             num_vars += 1
@@ -73,26 +68,24 @@ def encoding():
     for n in range(1,n_nodes+1):
         c = ""
         for v in range(1,n_colors+1):
-    	    c = c+str(-nodes[n][v])+" "
+    	    c = c+str(nodes[n][v])+" "
         formula = formula +str(parts)+" "+str(hard)+" "+c+" 0\n"
         clauses = clauses + 1
 
     # Each vertex should assigned at most one color
-    for n in range(1,n_nodes+1):
-        c = ""
-        for v in range(1,n_colors+1):
-            for v2 in range(v,n_colors+1):
-                formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[n][v])+" "+ str(-nodes[n][v2])+" 0\n"
+    for v in range(1,n_nodes+1):
+        for c1 in range(1,n_colors+1):
+            for c2 in range(v+1,n_colors+1):
+                formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v][c1])+" "+ str(-nodes[v][c2])+" 0\n"
                 clauses = clauses + 1        
 
 
     # Each two adjacent vertices a and b cannot be assigned the same color
     for c in range(1,n_colors+1):
-        for v in range(1,n_nodes+1):
-            for v2 in range(v,n_nodes+1):
-                formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v][c])+" "+ str(-nodes[v2][c])+" 0\n"
-                clauses = clauses + 1 
-
+        for (v1, v2) in edges:
+            formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v1][c])+" "+ str(-nodes[v2][c])+" 0\n"            
+            clauses = clauses + 1 
+        
     if args.pwcnf_colors == True:
         parts = n_colors+1
     elif args.pwcnf_nodes == True:
