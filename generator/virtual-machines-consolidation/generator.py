@@ -33,7 +33,8 @@ def generate_VMC_problem(ns, nvms):
     # The total memory we want to used 
     mem_2_use = random.sample([0.25,0.3,0.35,0.4], k=1)[0]
     # k is the ideal number of servers we want to de active after minimization
-    k = int(mem_2_use*2*ns)
+    k = random.sample([1.25,1.5,1.75,2],k=1)[0]
+    k = int(mem_2_use * k * ns)
     mem_2_use = int(total_mem*mem_2_use)
     vms_info = "VMs\n"
     for i in range(1,nvms+1):
