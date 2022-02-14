@@ -15,35 +15,63 @@ import random
 
 
 def generate_VMC_problem(ns, nvms):
-    print("vmc {n} {vms}".format(n=ns, vms=nvms))
-    print("severs")
+    
     servers_mem = [0 for _ in range(ns+1)]
-    servers_cpu = [0 for _ in range(ns+1)] 
+    servers_cpu = [0 for _ in range(ns+1)]
+    total_mem = 0
+    servers_info = "servers\n"
     for i in range(1,ns+1):
-        m=random.sample([512, 1024, 2048, 4096], k=1)[0]
-        c=100
+        # random choice of each server's memory
+        m=random.sample([4, 8, 16, 32, 64, 128], k=1)[0]
+        # c=100           
         servers_mem[i] = m
-        servers_cpu[i] = c
-        print("{s} {m} {cpu}".format(s=i, m=m, cpu=c))
+        total_mem += m
+        # initially each server is empty so it has 100 of free CPU
+        servers_cpu[i] = 100
+        servers_info = servers_info + "{s} {m}\n".format(s=i, m=m)# , cpu=c)
 
-    print("VMs")    
+    # The total memory we want to used 
+    mem_2_use = random.sample([0.25,0.3,0.35,0.4], k=1)[0]
+    # k is the ideal number of servers we want to de active after minimization
+    k = int(mem_2_use*2*ns)
+    mem_2_use = int(total_mem*mem_2_use)
+    vms_info = "VMs\n"
     for i in range(1,nvms+1):
         not_assigned = True
         while not_assigned:
-            m=random.sample([8, 16, 32, 64, 128, 256, 512, 1024], k=1)[0]
+            mem_slots = [1, 2, 4, 8, 16]
+            mems = [m for m in mem_slots if mem_2_use >= m]
+            if mems == []:
+                # No more memory available.
+                break
+            
+            m=random.sample(mems, k=1)[0]
             s=random.randint(1,ns)
-            c=random.sample([0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8], k=1)[0]
+            c=random.randint(1,32)
             available_mem = servers_mem[s] - m
             available_cpu = servers_cpu[s] - c            
             if available_mem >= 0 and available_cpu >= 0:
                 servers_mem[s] = available_mem
                 servers_cpu[s] = available_cpu
+                mem_2_use -= m
             else:
                 continue
-            print("{i} {m} {cpu} {s}".format(i=i, m=m, cpu=c, s=s))
+            vms_info = vms_info + "{i} {m} {cpu} {s}\n".format(i=i, m=m, cpu=c, s=s)
             not_assigned=False      
             break
-                
+
+        if not not_assigned:
+            continue # is VM i has already been assigned successfully to some server
+        
+        # in case no more memory (to use) is available which is likely since we chosse a percentage of at most 40% of the total memory
+        nvms = i-1
+        break
+
+    # header: "vmc" num_servers num_VMs K (K is the highest number (at most) of servers we want to remain active)
+    print("vmc {n} {vms} {k}".format(n=ns, vms=nvms, k=k))
+    print(servers_info[:-1])
+    print(vms_info[:-1])
+    
 def parser():
     parser = argparse.ArgumentParser(prog='generator.py', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-s', '--num_servers', default=10, type=int, help='Number of severs of the problem')
