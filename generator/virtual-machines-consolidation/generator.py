@@ -19,16 +19,16 @@ def generate_VMC_problem(ns, nvms):
     servers_mem = [0 for _ in range(ns+1)]
     servers_cpu = [0 for _ in range(ns+1)]
     total_mem = 0
-    servers_info = "servers\n"
+    servers_info = ""
     for i in range(1,ns+1):
         # random choice of each server's memory
         m=random.sample([4, 8, 16, 32, 64, 128], k=1)[0]
-        # c=100           
+        c=100           
         servers_mem[i] = m
         total_mem += m
         # initially each server is empty so it has 100 of free CPU
-        servers_cpu[i] = 100
-        servers_info = servers_info + "{s} {m}\n".format(s=i, m=m)# , cpu=c)
+        servers_cpu[i] = c
+        servers_info = servers_info + "{m} {cpu}\n".format(m=m , cpu=c)
 
     # The total memory we want to used 
     mem_2_use = random.sample([0.25,0.3,0.35,0.4], k=1)[0]
@@ -36,7 +36,7 @@ def generate_VMC_problem(ns, nvms):
     k = random.sample([1.25,1.5,1.75,2],k=1)[0]
     k = int(mem_2_use * k * ns)
     mem_2_use = int(total_mem*mem_2_use)
-    vms_info = "VMs\n"
+    vms_info = ""
     for i in range(1,nvms+1):
         not_assigned = True
         while not_assigned:
@@ -57,7 +57,7 @@ def generate_VMC_problem(ns, nvms):
                 mem_2_use -= m
             else:
                 continue
-            vms_info = vms_info + "{i} {m} {cpu} {s}\n".format(i=i, m=m, cpu=c, s=s)
+            vms_info = vms_info + "{m} {cpu} {s}\n".format(m=m, cpu=c, s=s)
             not_assigned=False      
             break
 
@@ -68,10 +68,11 @@ def generate_VMC_problem(ns, nvms):
         nvms = i-1
         break
 
-    # header: "vmc" num_servers num_VMs K (K is the highest number (at most) of servers we want to remain active)
-    print("vmc {n} {vms} {k}".format(n=ns, vms=nvms, k=k))
-    print(servers_info[:-1])
-    print(vms_info[:-1])
+    print(ns)                   # N - number of servers 
+    print(servers_info[:-1])    # list of N servers (memory cpu)
+    print(nvms)                 # M - number of VMs
+    print(vms_info[:-1])        # list of M VMs (memory cpu server_id)
+    print(k)                    # K servers
     
 def parser():
     parser = argparse.ArgumentParser(prog='generator.py', formatter_class=argparse.RawTextHelpFormatter)
