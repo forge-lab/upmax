@@ -3,7 +3,7 @@
 import sys
 
 if len(sys.argv) < 6:
-	print "Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=wcnf,1=pwcnf>"
+	print("Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=wcnf,1=pwcnf>")
 	exit()
 
 # input: tables, min, max, csv, pwcnf (0, 1)
@@ -65,7 +65,7 @@ def sinz(lits, k):
 			TableSeq[y][x] = v
 			v = v + 1
 
-	# print TableSeq
+	# print(TableSeq)
 
 	formula = formula + str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0\n"
 	formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0\n"
@@ -114,8 +114,8 @@ def encoding():
 		for p in range(len(persons)):
 			lits_pos.append(TablePerson[p][table])
 			lits_neg.append(-TablePerson[p][table])
-		# print lits_pos
-		# print max_tbls
+		# print(lits_pos)
+		# print(max_tbls)
 		sinz(lits_pos, max_tbls)
 		sinz(lits_neg, len(lits_neg)-min_tbls)
 
@@ -148,15 +148,15 @@ def encoding():
 
 def main():
 	parse_csv()
-	# print persons
-	# print tags
-	#print max_tbls
+	# print(persons)
+	# print(tags)
+	# print(max_tbls)
 	
 	encoding()
-	#print TablePerson
-	# print TableTag
-	print "p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " " + str(parts)
-	print formula,
+	#print(TablePerson)
+	# print(TableTag)
+	print("p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " " + str(parts))
+	print(formula)
 
 if __name__ == "__main__":
 	main()

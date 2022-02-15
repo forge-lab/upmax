@@ -6,7 +6,7 @@ from random import randint
 from random import random
 
 if len(sys.argv) < 4:
-	print "Usage: python generator.py <#tags> <#persons> <max tags per person>"
+	print("Usage: python generator.py <#tags> <#persons> <max tags per person>")
 	exit()
 
 tags = int(sys.argv[1])
@@ -26,7 +26,7 @@ def main():
 			if v <= float(value/tags):
 				line = line + "," + str(y)
 				t = t + 1
-		print line
+		print(line)
 
 if __name__ == "__main__":
 	main()
