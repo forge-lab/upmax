@@ -85,28 +85,25 @@ def encoding():
         for (v1, v2) in edges:
             formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v1][c])+" "+ str(-nodes[v2][c])+" 0\n"            
             clauses = clauses + 1 
-        
-    if args.pwcnf_colors == True:
-        parts = n_colors+1
-    elif args.pwcnf_nodes == True:
-        parts = n_nodes+1
-                
+
+    # we use c in color-based partitions and n in vertex-based        
+    parts = n_colors+1 if args.pwcnf_colors else n_nodes + 1
+                    
     # Soft clauses
     for n in range(1,n_nodes+1):
         for c in range(1,n_colors+1):
-            if args.pwcnf_colors == True:
-                formula = formula + str(c+1)+" "+str(c) + " " + str(-nodes[n][c]) + " 0\n"
-                clauses = clauses + 1
-            elif args.pwcnf_nodes == True :
-                formula = formula + str(n+1)+" "+str(n) + " " + str(-nodes[n][c]) + " 0\n"
-                clauses = clauses + 1
+            # we use c in color-based partitions and n in vertex-based
+            cost = c if args.pwcnf_colors else n
+            p = c + 1 if args.pwcnf_colors else n + 1
+            formula = formula + str(p)+" "+str(cost) + " " + str(-nodes[n][c]) + " 0\n"
+            clauses = clauses + 1
 
                                 
 def parser():
     parser = argparse.ArgumentParser(prog='msc.py', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--input_file', nargs='?',help='input file')
     parser.add_argument('-pc', '--pwcnf_colors', action='store_true', default=False, help='Output format: PWCNF (colors)')
-    parser.add_argument('-pn', '--pwcnf_nodes', action='store_true', default=False, help='Output format: PWCNF (nodes)')
+    parser.add_argument('-pn', '--pwcnf_nodes', action='store_true', default=False, help='Output format: PWCNF (nodes) (DEFAULT)')
     parser.add_argument('-w', '--wcnf', action='store_true', default=False, help='Output format: WCNF')
     args = parser.parse_args(argv[1:])
     return args
