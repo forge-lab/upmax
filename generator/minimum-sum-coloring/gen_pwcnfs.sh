@@ -8,9 +8,9 @@
 # (C) Copyright 2022 Pedro Orvalho.
 #==============================================================================
 
-n_graphs=1000
+n_instances=1200
 per_timeout=150  # we only want at most 15% of timeouts
-n_min=25
+n_min= 25
 n_max=75
 p_min=0.40
 p_max=0.65
@@ -33,17 +33,18 @@ do
    gzip $data_dir/pwcnfs-vertex-based/$i_name.pwcnf
    timeout 600s ../../open-wbo -formula=2 $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz > /tmp/$i_name.out
    # test timrout
-   exit_status=$?
-   if [[ $exit_status -eq 124 ]]; then
-       if [[ $timeout -ge 150 ]]; then # we only want at most 15% of timeouts
-	   rm  $data_dir/graphs/$i_name.g
-	   rm  $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz
-	   i=$((i-1))
-	   continue
-       else
-	   timeout=$((timeout+1))
-       fi
-    fi
+   # exit_status=$?
+   # if [[ $exit_status -eq 124 ]]; then
+   #     if [[ $timeout -ge 150 ]]; then # we only want at most 15% of timeouts
+   # 	   rm  $data_dir/graphs/$i_name.g
+   # 	   rm  $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz
+   # 	   i=$((i-1))
+   # 	   continue
+   #     else
+   # 	   timeout=$((timeout+1))
+   #     fi
+   #  fi
+   
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
        rm  $data_dir/graphs/$i_name.g
@@ -57,7 +58,15 @@ do
 done
 }
 
-for((i=1; i<=1000; i=i+100))
+
+# for((i=1; i<=1000; i=i+100))
+# do
+#     gen_instances $i $((i+99)) &
+# done     
+
+n_min=50
+n_max=80
+for((i=1001; i<=$n_instances; i=i+10))
 do
     gen_instances $i $((i+99)) &
 done     
