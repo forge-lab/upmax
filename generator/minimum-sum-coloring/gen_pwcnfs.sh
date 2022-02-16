@@ -8,10 +8,10 @@
 # (C) Copyright 2022 Pedro Orvalho.
 #==============================================================================
 
-n_instances=1200
+n_instances=1000
 per_timeout=150  # we only want at most 15% of timeouts
-n_min= 25
-n_max=75
+# n_min= 25
+# n_max=75
 p_min=0.40
 p_max=0.65
 timeouts=0    
@@ -59,14 +59,11 @@ done
 }
 
 
-# for((i=1; i<=1000; i=i+100))
-# do
-#     gen_instances $i $((i+99)) &
-# done     
-
-n_min=50
-n_max=80
-for((i=1001; i<=$n_instances; i=i+10))
+n_min=20
+n_max=30
+for((i=1; i<=$n_instances; i=i+50))
 do
-    gen_instances $i $((i+99)) &
-done     
+    gen_instances $n_min $n_max &
+    n_min=$((n_min+10))
+    n_max=$((n_max+10))
+done
