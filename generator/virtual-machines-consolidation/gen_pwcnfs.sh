@@ -10,8 +10,8 @@
 
 n_instances=1000
 per_timeout=150  # we only want at most 15% of timeouts
-servers_min=15
-servers_max=50
+servers_min=10
+servers_max=40
 vms_min=20
 vms_max=45
 timeouts=0    
@@ -26,9 +26,9 @@ for((g=$1; g<=$2; g++))
 do  
    echo $g
    s=$(python -c "import random; print(random.randint("$servers_min","$servers_max"))")
-   u=$(python -c "import random; print(round(random.randint("$vms_min","$vms_max")/100,2))")
-   i_name=vmc$g-s$s-u$(python -c "print(round(100*"$u"))")
-   ./vmc-generator $s $v $g > $data_dir/instances/$i_name.vmc
+   u=$(python -c "import random; print(random.randint("$vms_min","$vms_max"))")
+   i_name=vmc$g-s$s-u$u
+   ./vmc-generator $s $u $g > $data_dir/instances/$i_name.vmc
    python3 vmc.py -f $data_dir/instances/$i_name.vmc -uw > $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf
    gzip $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf
    timeout 600s ../../open-wbo -formula=2 $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf.gz > /tmp/$i_name.out
