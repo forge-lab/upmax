@@ -68,5 +68,5 @@ n_min=50
 n_max=80
 for((i=1001; i<=$n_instances; i=i+10))
 do
-    gen_instances $i $((i+99)) &
+    gen_instances $i $((i+9)) &
 done     
