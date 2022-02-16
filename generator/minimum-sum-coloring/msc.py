@@ -17,7 +17,7 @@ import argparse
 
 # input f
 # g num_nodes num_edges
-# v1 v2
+# v1 v4
 # ...
 
 parts = 1
@@ -72,7 +72,6 @@ def encoding():
             num_vars += 1
             if args.debbug:
                 print("Node {v} var:{var}".format(v=v, var=num_vars-1), file=sys.stderr)     
-    # print(nodes)
     print("p pwcnf {v} {c} {h} {p}".format(v=num_vars-1,c=get_num_clauses(),h=hard,p=n_colors+1  if args.pwcnf_colors else n_nodes + 1))
     
     # Each vertex should assigned a color
@@ -80,16 +79,12 @@ def encoding():
         c = ""
         for v in range(1,n_colors+1):
     	    c = c+" "+str(nodes[n][v])
-        # formula = formula +str(parts)+" "+str(hard)+" "+c+" 0\n"
-        # clauses = clauses + 1
         print(str(parts)+" "+str(hard)+" "+c+" 0")
         
     # Each vertex should assigned at most one color
     for v in range(1,n_nodes+1):
         for c1 in range(1,n_colors+1):
             for c2 in range(c1+1,n_colors+1):
-                # formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v][c1])+" "+ str(-nodes[v][c2])+" 0\n"
-                # clauses = clauses + 1
                 print(str(parts)+" "+str(hard)+" "+ str(-nodes[v][c1])+" "+ str(-nodes[v][c2])+" 0")
 
     # Each two adjacent vertices a and b cannot be assigned the same color
@@ -99,8 +94,6 @@ def encoding():
         for c in range(1,n_colors+1):
             if args.debbug:
                 print("Edge {e1} {e2}".format(e1=v1,e2=v2), file=sys.stderr)     
-            # formula = formula +str(parts)+" "+str(hard)+" "+ str(-nodes[v1][c])+" "+ str(-nodes[v2][c])+" 0\n"            
-            # clauses = clauses + 1
             print(str(parts)+" "+str(hard)+" "+ str(-nodes[v1][c])+" "+ str(-nodes[v2][c])+" 0")
         e=get_edge()
 
@@ -113,8 +106,6 @@ def encoding():
             # we use c in color-based partitions and n in vertex-based
             cost = c
             p = c + 1 if args.pwcnf_colors else n + 1
-            # formula = formula + str(p)+" "+str(cost) + " " + str(-nodes[n][c]) + " 0\n"
-            # clauses = clauses + 1
             print(str(p)+" "+str(cost) + " " + str(-nodes[n][c]) + " 0")
                                 
 def parser():
@@ -131,12 +122,8 @@ def parser():
 def main():
     parse_input()
     encoding()
-    # print("p pwcnf {v} {c} {h} {p}".format(v=num_vars-1,c=clauses,h=hard,p=parts))
-    # print(formula)
-
+   
 if __name__ == "__main__":
     args = parser()
     f = open(args.input_file, "r")
     main()
-
-
