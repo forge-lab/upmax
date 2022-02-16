@@ -111,7 +111,7 @@ def encoding():
     for n in range(1,n_nodes+1):
         for c in range(1,n_colors+1):
             # we use c in color-based partitions and n in vertex-based
-            cost = c if args.pwcnf_colors else n
+            cost = c
             p = c + 1 if args.pwcnf_colors else n + 1
             # formula = formula + str(p)+" "+str(cost) + " " + str(-nodes[n][c]) + " 0\n"
             # clauses = clauses + 1
