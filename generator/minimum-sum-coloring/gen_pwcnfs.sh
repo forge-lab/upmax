@@ -10,10 +10,10 @@
 
 n_graphs=1000
 per_timeout=150  # we only want at most 15% of timeouts
-n_min=30
-n_max=80
-p_min=0.4
-p_max=0.6
+n_min=25
+n_max=75
+p_min=0.40
+p_max=0.65
 timeouts=0    
 
 #data_dir=$(pwd)
