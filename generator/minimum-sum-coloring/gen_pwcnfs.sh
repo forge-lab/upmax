@@ -16,9 +16,9 @@ p_min=0.4
 p_max=0.6
 timeouts=0    
 
-data_dir=$(pwd)
-# data_dir="/data/tmp/pwcnfs/"
-mkdir -p graphs minimum-sum-coloring-pwcnfs/color-based minimum-sum-coloring-pwcnfs/vertex-based
+#data_dir=$(pwd)
+data_dir="/data/tmp/pwcnfs/minimum-sum-coloring"
+mkdir -p $data_dir $data_dir/outputs $data_dir/graphs $data_dir/pwcnfs-color-based $data_dir/pwcnfs-vertex-based
 
 gen_instances(){
 # $1 is the beginning value for the for-cycle and $2 the limit. 
@@ -28,16 +28,16 @@ do
    n=$(python -c "import random; print(random.randint("$n_min","$n_max"))")
    p=$(python -c "import random; print(round(random.uniform("$p_min","$p_max"),2))")
    i_name=g$g-n$n-p$(python -c "print(round(100*"$p"))")
-   python3 generator.py -n $n -p $p > graphs/$i_name.g
-   python3 msc.py -f graphs/$i_name.g > minimum-sum-coloring-pwcnfs/vertex-based/$i_name.pwcnf
-   gzip minimum-sum-coloring-pwcnfs/vertex-based/$i_name.pwcnf
-   timeout 600s ../../open-wbo -formula=2 minimum-sum-coloring-pwcnfs/vertex-based/$i_name.pwcnf.gz > /tmp/$i_name.out
+   python3 generator.py -n $n -p $p > $data_dir/graphs/$i_name.g
+   python3 msc.py -f $data_dir/graphs/$i_name.g > $data_dir/pwcnfs-vertex-based/$i_name.pwcnf
+   gzip $data_dir/pwcnfs-vertex-based/$i_name.pwcnf
+   timeout 600s ../../open-wbo -formula=2 $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz > /tmp/$i_name.out
    # test timrout
    exit_status=$?
    if [[ $exit_status -eq 124 ]]; then
        if [[ $timeout -ge 150 ]]; then # we only want at most 15% of timeouts
-	   rm  graphs/$i_name.g
-	   rm   minimum-sum-coloring-pwcnfs/vertex-based/$i_name.pwcnf.gz
+	   rm  $data_dir/graphs/$i_name.g
+	   rm  $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz
 	   i=$((i-1))
 	   continue
        else
@@ -46,13 +46,14 @@ do
     fi
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
-       rm  graphs/$i_name.g
-       rm   minimum-sum-coloring-pwcnfs/vertex-based/$i_name.pwcnf.gz
+       rm  $data_dir/graphs/$i_name.g
+       rm  $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz
        i=$((i-1))
        continue
    fi
-   python3 msc.py -f graphs/$i_name.g -pc > minimum-sum-coloring-pwcnfs/color-based/$i_name.pwcnf
-   gzip minimum-sum-coloring-pwcnfs/color-based/$i_name.pwcnf
+   python3 msc.py -f $data_dir/graphs/$i_name.g -pc > $data_dir/pwcnfs-color-based/$i_name.pwcnf
+   gzip $data_dir/pwcnfs-color-based/$i_name.pwcnf
+   cp /tmp/$i_name.out $data_dir/outputs/.
 done
 }
 
