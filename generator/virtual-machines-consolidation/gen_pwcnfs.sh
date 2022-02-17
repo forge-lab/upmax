@@ -20,6 +20,18 @@ timeouts=0
 data_dir="/data/tmp/pwcnfs/virtual-machine-consolidation"
 mkdir -p $data_dir $data_dir/outputs $data_dir/instances $data_dir/unweighted/pwcnfs-server-based $data_dir/unweighted/pwcnfs-vm-based $data_dir/weighted/pwcnfs-server-based $data_dir/weighted/pwcnfs-vm-based
 
+build_pwcnf(){
+   # $1 receives the file .out name to replace XX on the PWCNF formula with the values of its variables and clauses 
+   file_name=$1
+   clauses=$(tail -n 1 $file_name.out)
+   vars=$(tail -n 2 $file_name.out | head -n 1)
+   head -n 1 $file_name.out | sed -e 's/XX/'$vars' '$clauses'/g' >  $file_name.pwcnf
+   sed -n 2,$((clauses+1))p $file_name.out >> $file_name.pwcnf
+   rm $file_name.out
+   gzip $file_name.pwcnf
+}
+
+
 gen_instances(){
 # $1 is the beginning value for the for-cycle and $2 the limit.
 # $3 is the minimum number of servers and $4 the maximum 
@@ -31,12 +43,7 @@ do
    i_name=vmc$g-s$s-u$u
    ./vmc-generator $s $u $g > $data_dir/instances/$i_name.vmc
    python3 vmc.py -f $data_dir/instances/$i_name.vmc -uw > $data_dir/unweighted/pwcnfs-server-based/$i_name.out
-   clauses=$(tail -n 1 $data_dir/unweighted/pwcnfs-server-based/$i_name.out)
-   vars=$(tail -n 2 $data_dir/unweighted/pwcnfs-server-based/$i_name.out | head -n 1)
-   head -n 1 $data_dir/unweighted/pwcnfs-server-based/$i_name.out | sed -e 's/XX/'$vars' '$clauses'/g' >  $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf
-   sed -n 2,$((clauses+1))p $data_dir/unweighted/pwcnfs-server-based/$i_name.out >> $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf
-   rm $data_dir/unweighted/pwcnfs-server-based/$i_name.out
-   gzip $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf
+   build_pwcnf $data_dir/unweighted/pwcnfs-server-based/$i_name
    timeout 600s ../../open-wbo -formula=2 $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf.gz > /tmp/$i_name.out
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
@@ -45,12 +52,12 @@ do
        i=$((i-1))
        continue
    fi
-   python3 vmc.py -f $data_dir/instances/$i_name.vmc -pv -uw > $data_dir/unweighted/pwcnfs-vm-based/$i_name.pwcnf
-   gzip $data_dir/unweighted/pwcnfs-vm-based/$i_name.pwcnf
-   python3 vmc.py -f $data_dir/instances/$i_name.vmc > $data_dir/weighted/pwcnfs-server-based/$i_name.pwcnf
-   gzip $data_dir/weighted/pwcnfs-server-based/$i_name.pwcnf
-   python3 vmc.py -f $data_dir/instances/$i_name.vmc -pv > $data_dir/weighted/pwcnfs-vm-based/$i_name.pwcnf
-   gzip $data_dir/weighted/pwcnfs-vm-based/$i_name.pwcnf
+   python3 vmc.py -f $data_dir/instances/$i_name.vmc -pv -uw > $data_dir/unweighted/pwcnfs-vm-based/$i_name.out
+   build_pwcnf $data_dir/unweighted/pwcnfs-vm-based/$i_name
+   python3 vmc.py -f $data_dir/instances/$i_name.vmc > $data_dir/weighted/pwcnfs-server-based/$i_name.out
+   build_pwcnf $data_dir/weighted/pwcnfs-server-based/$i_name
+   python3 vmc.py -f $data_dir/instances/$i_name.vmc -pv > $data_dir/weighted/pwcnfs-vm-based/$i_name.out
+   build_pwcnf $data_dir/weighted/pwcnfs-vm-based/$i_name
    cp /tmp/$i_name.out $data_dir/outputs/.
 done
 }
