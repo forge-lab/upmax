@@ -15,6 +15,10 @@ max_tbls =  int(sys.argv[3])
 csv = sys.argv[4]
 pwcnf = int(sys.argv[5])
 parts = 1
+# we will build an incomplete pwcnf (without num variables and clauses) to be faster
+complete_pwcnf=False
+if len(sys.argv) > 6:
+	complete_pwcnf=True
 
 persons = dict()
 tags = set()
@@ -57,7 +61,7 @@ def parse_csv():
 def sinz(lits, k):
 	global v
 	global formula
-	global clauses
+	global clauses, complete_pwcnf
 
 	TableSeq = [[0 for x in range(k)] for y in range(len(lits))]
 	for x in range(0,k):
@@ -65,23 +69,37 @@ def sinz(lits, k):
 			TableSeq[y][x] = v
 			v = v + 1
 
-	# print(TableSeq)
-
-	formula = formula + str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0\n"
-	formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0\n"
+	if complete_pwcnf :
+		formula = formula + str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0\n"
+		formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0\n"
+	else:
+		print(str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0")
+		print(str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0")
 	clauses = clauses + 2
 	for x in range(1,k):
-		formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[0][x]) + " 0\n"
+		if complete_pwcnf:
+			formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[0][x]) + " 0\n"
+		else:
+			print(str(parts)+" "+str(hard) + " " + str(-TableSeq[0][x]) + " 0")
 		clauses = clauses + 1
 
 	for i in range(1,len(lits)-1):
-		formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(TableSeq[i][0]) + " 0\n"
-		formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][0]) + " " + str(TableSeq[i][0]) + " 0\n"
-		formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(-TableSeq[i-1][k-1]) + " 0\n"
+		if complete_pwcnf:
+			formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(TableSeq[i][0]) + " 0\n"
+			formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][0]) + " " + str(TableSeq[i][0]) + " 0\n"
+			formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(-TableSeq[i-1][k-1]) + " 0\n"
+		else:
+			print(str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(TableSeq[i][0]) + " 0")
+			print(str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][0]) + " " + str(TableSeq[i][0]) + " 0")
+			print(str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(-TableSeq[i-1][k-1]) + " 0")
 		clauses = clauses + 3
 		for j in range(1, k):
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][j]) + " " + str(TableSeq[i][j]) + " 0\n"
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) +  " " + str(-TableSeq[i-1][j-1]) + " " + str(TableSeq[i][j]) + " 0\n"
+			if complete_pwcnf:
+				formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][j]) + " " + str(TableSeq[i][j]) + " 0\n"
+				formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) +  " " + str(-TableSeq[i-1][j-1]) + " " + str(TableSeq[i][j]) + " 0\n"
+			else:
+				print(str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][j]) + " " + str(TableSeq[i][j]) + " 0")
+				print(str(parts)+" "+str(hard) + " " + str(-lits[i]) +  " " + str(-TableSeq[i-1][j-1]) + " " + str(TableSeq[i][j]) + " 0")
 			clauses = clauses + 2
 
 
@@ -89,7 +107,8 @@ def encoding():
 	# create variables
 	global v
 	global formula
-	global clauses
+	global clauses, complete_pwcnf
+	
 	for x in range(0,tbls):
 		for y in range(0,len(persons)):
 			TablePerson[y][x] = v
@@ -100,11 +119,17 @@ def encoding():
 			TableTag[y][x] = v
 			v = v + 1
 
+	# Header
+	if not complete_pwcnf:
+		print("p pwcnf XX "+ str(hard) + " " + str(parts)) 
 	# If a person is seated in a table then that tag is true
 	for p in persons.keys():
 		for tag in persons[p]:
 			for table in range(0,tbls):
-				formula = formula + str(parts)+" "+str(hard) + " " + str(-TablePerson[p][table]) + " " + str(TableTag[tag][table]) + " 0\n"
+				if complete_pwcnf:
+					formula = formula + str(parts)+" "+str(hard) + " " + str(-TablePerson[p][table]) + " " + str(TableTag[tag][table]) + " 0\n"
+				else:
+					print(str(parts)+" "+str(hard) + " " + str(-TablePerson[p][table]) + " " + str(TableTag[tag][table]) + " 0")
 				clauses = clauses + 1
 
 	# Each table has at most k persons
@@ -132,7 +157,10 @@ def encoding():
 		for x in lits:
 			clause = clause + " " + str(x)
 		clause = clause + " 0\n"
-		formula = formula + clause
+		if complete_pwcnf:
+			formula = formula + clause
+		else:
+			print(clause[:-1])
 		clauses + clauses + 1
 
 
@@ -140,13 +168,20 @@ def encoding():
 	for x in range(0,tbls):
 		for y in range(0,len(tags)):
 			if pwcnf == 0:
-				formula = formula + str(x+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+				if complete_pwcnf:
+					formula = formula + str(x+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+				else:
+					print(str(x+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
 				clauses = clauses + 1
 			else:
-				formula = formula + str(y+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+				if complete_pwcnf:
+					formula = formula + str(y+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+				else:
+					print(str(y+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
 				clauses = clauses + 1
 
 def main():
+	global complete_pwcnf
 	parse_csv()
 	# print(persons)
 	# print(tags)
@@ -155,8 +190,12 @@ def main():
 	encoding()
 	#print(TablePerson)
 	# print(TableTag)
-	print("p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " " + str(parts))
-	print(formula)
+	if complete_pwcnf:
+		print("p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " " + str(parts))
+		print(formula, end="")
+	else:
+		print(str(v))
+		print(str(clauses))
 
 if __name__ == "__main__":
 	main()
