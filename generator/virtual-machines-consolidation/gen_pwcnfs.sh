@@ -48,7 +48,7 @@ do
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
        rm  $data_dir/instances/$i_name.vmc
-       rm  $data_dir/pwcnfs-server-based/$i_name.pwcnf.gz
+       rm  $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf.gz
        i=$((i-1))
        continue
    fi
