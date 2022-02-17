@@ -39,20 +39,20 @@ do
    num_tables=$(python -c "print(int(0.2*"$p"))")
    min_per_table=$(python -c "print(int(0.8*int("$p"/"$num_tables")))")
    max_per_table=$(python -c "print(int(1.3*int("$p"/"$num_tables")))")
-   i_name=$i_name-tabs$num_tables-$min_per_table-$max_per_table 
-   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tables-based/$i_name.out
-   build_pwcnf $data_dir/pwcnfs-tables-based/$i_name
-   timeout 600s ../../open-wbo -formula=2 $data_dir/pwcnfs-tables-based/$i_name.pwcnf.gz > /tmp/$i_name.out
+   pwcnf_name=$i_name-tabs$num_tables-$min_per_table-$max_per_table 
+   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tables-based/$pwcnf_name.out
+   build_pwcnf $data_dir/pwcnfs-tables-based/$pwcnf_name
+   timeout 600s ../../open-wbo -formula=2 $data_dir/pwcnfs-tables-based/$pwcnf_name.pwcnf.gz > /tmp/$pwcnf_name.out
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
-       rm  $data_dir/instances/$i_name.vmc
-       rm  $data_dir/pwcnfs-tables-based/$i_name.pwcnf.gz
+       rm  $data_dir/instances/$i_name.sa
+       rm  $data_dir/pwcnfs-tables-based/$pwcnf_name.pwcnf.gz
        i=$((i-1))
        continue
    fi
-   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tags-based/$i_name.out
-   build_pwcnf $data_dir/pwcnfs-tags-based/$i_name
-   cp /tmp/$i_name.out $data_dir/outputs/.
+   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tags-based/$pwcnf_name.out
+   build_pwcnf $data_dir/pwcnfs-tags-based/$pwcnf_name
+   cp /tmp/$pwcnf_name.out $data_dir/outputs/.
 done
 }
 
