@@ -49,11 +49,11 @@ done
 }
 
 
-n_min=10
-n_max=20
+n_min=5
+n_max=5
 for((i=1; i<=$n_instances; i=i+50))
 do
     gen_instances $i $((i+50)) $n_min $n_max &
-    n_min=$((n_min+5))
-    n_max=$((n_max+5))
+    n_min=$((n_min+1))
+    n_max=$((n_max+1))
 done
