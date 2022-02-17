@@ -9,8 +9,8 @@
 #==============================================================================
 
 n_instances=1000
-tags_min=5
-tags_max=9    
+tags_min=6
+tags_max=10    
 #data_dir=$(pwd)
 data_dir="/data/tmp/pwcnfs/seating-assignment"
 mkdir -p $data_dir $data_dir/outputs $data_dir/instances $data_dir/pwcnfs-tables-based $data_dir/pwcnfs-tags-based
@@ -33,8 +33,9 @@ do
    echo $g
    p=$(python -c "import random; print(random.randint("$3","$4"))")
    t=$(python -c "import random; print(random.randint("$tags_min","$tags_max"))")
-   max_tags_per_person=$(python -c "import random; print(random.randint(int(0.2*"$tags_min"),int(0.4*"$tags_min")))")
-   i_name=s$g-p$p-tgs$t-mt$$max_tags_per_person
+   #max_tags_per_person=$(python -c "import random; print(random.randint(int(0.4*"$tags_min"),int(0.8*"$tags_min")))")
+   max_tags_per_person=$(python -c "print(int(0.8*"$t"))")
+   i_name=s$g-p$p-tgs$t-mt$max_tags_per_person
    python3 generator.py $t $p $max_tags_per_person > $data_dir/instances/$i_name.sa
    num_tables=$(python -c "print(int(0.2*"$p"))")
    min_per_table=$(python -c "print(int(0.8*int("$p"/"$num_tables")))")
@@ -44,24 +45,25 @@ do
    build_pwcnf $data_dir/pwcnfs-tables-based/$pwcnf_name
    timeout 600s ../../open-wbo -formula=2 $data_dir/pwcnfs-tables-based/$pwcnf_name.pwcnf.gz > /tmp/$pwcnf_name.out
    # Test if instance is unsat
-   if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
+   if [[ $(grep "UNSAT" /tmp/$pwcnf_name.out) ]]; then
+       echo $g "UNSAT"	   
        rm  $data_dir/instances/$i_name.sa
        rm  $data_dir/pwcnfs-tables-based/$pwcnf_name.pwcnf.gz
-       i=$((i-1))
+       g=$((g-1))
        continue
-   fi
+   fi  
    python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tags-based/$pwcnf_name.out
    build_pwcnf $data_dir/pwcnfs-tags-based/$pwcnf_name
    cp /tmp/$pwcnf_name.out $data_dir/outputs/.
 done
 }
 
-# calculations from 5 to 50 since we increment +2 20 times
-persons_min=5
-persons_max=10
+# calculations from 20-25 to 75-80 since we increment +3 20 times
+persons_min=20
+persons_max=25
 for((i=1; i<=$n_instances; i=i+50))
 do
     gen_instances $i $((i+50)) $persons_min $persons_max &
-    persons_min=$((persons_min+2))
-    persons_max=$((persons_max+2))
+    persons_min=$((persons_min+3))
+    persons_max=$((persons_max+3))
 done     
