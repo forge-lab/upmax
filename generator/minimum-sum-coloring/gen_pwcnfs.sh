@@ -47,12 +47,12 @@ do
 done
 }
 
-n_min=5  # initial value : 5 and final 505 
-n_max=50 # initial value : 550 and final 555 
+n_min=5  # initial value : 5 and final 105 
+n_max=15 # initial value : 15 and final 115 
 for((i=1; i<=$n_instances; i=i+50))
 do
     echo "Generating instances from "$i" to "$((i+50))	
     gen_instances $i $((i+50)) $n_min $n_max &
-    n_min=$((n_min+25))
-    n_max=$((n_max+25))
+    n_min=$((n_min+5))
+    n_max=$((n_max+5))
 done
