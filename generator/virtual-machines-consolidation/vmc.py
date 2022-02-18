@@ -185,7 +185,7 @@ def encoding():
                     
                                 
 def parser():
-    parser = argparse.ArgumentParser(prog='msc.py', formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(prog='vmc.py', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--input_file', nargs='?',help='input file')
     parser.add_argument('-d', '--debbug', action='store_true', default=False, help='Debug info')
     parser.add_argument('-cpwcnf', '--complete_pwcnf', action='store_true', default=False, help='Writes the complete PWCNF with the value of variables and clauses in the header and not in the end of the file. This approach is quite slower (SLOW).')
