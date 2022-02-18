@@ -9,12 +9,11 @@
 #==============================================================================
 
 n_instances=1000
-per_timeout=150  # we only want at most 15% of timeouts
-# n_min=25
-# n_max=75
-p_min=0.40
-p_max=0.60
-timeouts=0    
+# initial values
+# p_min=0.40
+# p_max=0.60
+p_min=0.02
+p_max=0.10
 
 #data_dir=$(pwd)
 data_dir="/data/tmp/pwcnfs/minimum-sum-coloring"
@@ -25,7 +24,6 @@ gen_instances(){
 # $3 is the current maximum number of nodes and $4 the minimum.
 for((g=$1; g<=$2; g++))
 do  
-   echo $g
    n=$(python -c "import random; print(random.randint($3,$4))")
    p=$(python -c "import random; print(round(random.uniform("$p_min","$p_max"),2))")
    i_name=g$g-n$n-p$(python -c "print(round(100*"$p"))")
@@ -37,6 +35,7 @@ do
    
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
+       echo $g" UNSAT"
        rm  $data_dir/graphs/$i_name.g
        rm  $data_dir/pwcnfs-vertex-based/$i_name.pwcnf.gz
        i=$((i-1))
@@ -48,12 +47,12 @@ do
 done
 }
 
-
-n_min=5
-n_max=5
+n_min=5  # initial value : 5 and final 505 
+n_max=50 # initial value : 550 and final 555 
 for((i=1; i<=$n_instances; i=i+50))
 do
+    echo "Generating instances from "$i" to "$((i+50))	
     gen_instances $i $((i+50)) $n_min $n_max &
-    n_min=$((n_min+1))
-    n_max=$((n_max+1))
+    n_min=$((n_min+25))
+    n_max=$((n_max+25))
 done
