@@ -30,7 +30,6 @@ gen_instances(){
 # $3 is the minimum number of servers and $4 the maximum 
 for((g=$1; g<=$2; g++))
 do  
-   echo $g
    p=$(python -c "import random; print(random.randint("$3","$4"))")
    t=$(python -c "import random; print(random.randint("$tags_min","$tags_max"))")
    #max_tags_per_person=$(python -c "import random; print(random.randint(int(0.4*"$tags_min"),int(0.8*"$tags_min")))")
@@ -63,7 +62,8 @@ persons_min=20
 persons_max=25
 for((i=1; i<=$n_instances; i=i+50))
 do
+    echo "Generating instances from "$i" to "$((i+50))
     gen_instances $i $((i+50)) $persons_min $persons_max &
-    persons_min=$((persons_min+3))
-    persons_max=$((persons_max+3))
+    persons_min=$((persons_min+4))
+    persons_max=$((persons_max+4))
 done     
