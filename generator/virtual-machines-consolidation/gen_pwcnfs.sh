@@ -37,7 +37,6 @@ gen_instances(){
 # $3 is the minimum number of servers and $4 the maximum 
 for((g=$1; g<=$2; g++))
 do  
-   echo $g
    s=$(python -c "import random; print(random.randint("$3","$4"))")
    u=$(python -c "import random; print(random.randint("$vms_min","$vms_max"))")
    i_name=vmc$g-s$s-u$u
@@ -47,9 +46,10 @@ do
    timeout 600s ../../open-wbo -formula=2 $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf.gz > /tmp/$i_name.out
    # Test if instance is unsat
    if [[ $(grep "UNSAT" /tmp/$i_name.out) ]]; then
+       echo $i_name" unsat"
        rm  $data_dir/instances/$i_name.vmc
        rm  $data_dir/unweighted/pwcnfs-server-based/$i_name.pwcnf.gz
-       i=$((i-1))
+       g=$((g-1))
        continue
    fi
    python3 vmc.py -f $data_dir/instances/$i_name.vmc -pv -uw > $data_dir/unweighted/pwcnfs-vm-based/$i_name.out
@@ -62,10 +62,11 @@ do
 done
 }
 
-servers_min=1
+servers_min=3
 servers_max=5
 for((i=1; i<=$n_instances; i=i+50))
 do
+    echo "Generating instances from "$i" to "$((i+50))	
     gen_instances $i $((i+50)) $servers_min $servers_max &
     servers_min=$((servers_min+2))
     servers_max=$((servers_max+2))
