@@ -39,7 +39,7 @@ def parse_input():
     _, n_nodes, n_edges, n_colors = header.split()
     n_nodes, n_edges, n_colors = int(n_nodes), int(n_edges), int(n_colors)
     # n_colors = n_nodes
-    nodes = [[[]] for _ in range(n_colors+1)]
+    nodes = [[[]] for _ in range(n_nodes+1)]
     edges = []
     hard = n_colors*2
             
