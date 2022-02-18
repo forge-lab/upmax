@@ -3,7 +3,7 @@
 #Usage			: python generator.py -n num_nodes -p prob_edges
 #Author			: pmorvalho
 #Date			: February 11, 2022
-#Description	        : Creates a Erdos-Renyi graph with n nodes and probability prob of edges 
+#Description	        : Creates a Erdos-Renyi graph with n nodes and probability prob of edges and a number of colors
 #Notes			: 
 #Python Version: 3.8.5
 # (C) Copyright 2022 Pedro Orvalho.
@@ -16,11 +16,15 @@ import random
 
 def generate_erdos_renyi_graph(n, p):
     edges = []
+    connections = [0 for _ in range(n+1)]
     for i in range(1,n+1):
         for j in range(i+1, n+1):
             if random.random() < p:
                 edges.append((i,j))
-    print("g {n} {ne}".format(n=n, ne=len(edges)))
+                connections[i] += 1
+                connections[j] += 1
+    # the number of colors is the maximum number of connections for all nodes in the graph
+    print("g {n} {ne} {nc} ".format(n=n, ne=len(edges), nc=max(connections)+1))
     for e in edges:
         print(e[0], e[1])
 
