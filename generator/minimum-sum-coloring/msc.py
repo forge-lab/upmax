@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #Title			: msc.py
-#Usage			: python msc.py -i instance.g [-pwcnf 
+#Usage			: python msc.py -i instance.g -h
 #Author			: pmorvalho
 #Date			: February 11, 2022
 #Description           	: MaxSAT encoding for the Minimum Sum Coloring Problem 
@@ -16,7 +16,7 @@ from sys import argv
 import argparse
 
 # input f
-# g num_nodes num_edges
+# g num_nodes num_edges num_colors
 # v1 v4
 # ...
 
@@ -36,9 +36,9 @@ hard = None
 def parse_input():
     global n_nodes, n_edges, n_colors, nodes, edges, parts, hard, args, f
     header = f.readline()
-    _, n_nodes, n_edges = header.split()
-    n_nodes, n_edges = int(n_nodes), int(n_edges)
-    n_colors = n_nodes
+    _, n_nodes, n_edges, n_colors = header.split()
+    n_nodes, n_edges, n_colors = int(n_nodes), int(n_edges), int(n_colors)
+    # n_colors = n_nodes
     nodes = [[[]] for _ in range(n_colors+1)]
     edges = []
     hard = n_colors*2
