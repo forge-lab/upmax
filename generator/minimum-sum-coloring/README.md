@@ -50,4 +50,4 @@ Script's variables:
 - n_min - minimum number of nodes per instance
 - n_max - maximum number of nodes per instance
 
-This script creates 20 parallel processes running with different minimum and maximum number of nodes per instances. Hence, in the end, these two variables will take values from 5 (resp. 15)  to 15 (resp. 115).
+This script creates 20 parallel processes running with different minimum and maximum number of nodes per instances. Hence, in the end, these two variables will take values from 5 (resp. 10)  to 80 (resp. 85).
