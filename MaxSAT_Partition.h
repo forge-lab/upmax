@@ -110,12 +110,15 @@ public:
 
   void dump2pwcnf(){
       // n_vars n_clauses topw n_part
-      printf("p pwcnf %d %d %llu %d\n", getMaxSATFormula()->nVars(), getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft(), getMaxSATFormula()->getHardWeight(), nPartitions());
+      printf("p pwcnf %d %d %llu %d\n", getMaxSATFormula()->nVars(), getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft(), getMaxSATFormula()->getHardWeight(), nPartitions()+1);
       for (size_t j = 0; j < getMaxSATFormula()->nHard(); j++) {
-        int p = getHardClause(j).getPartition();
-        if (p==-1){ // if clause does not have a partition assigned
-          p = hardClausePartition(j);
-        }
+        // int p = getHardClause(j).getPartition();
+        // if (p==-1){ // if clause does not have a partition assigned
+        //   p = hardClausePartition(j);
+        // }
+        int p = hardClausePartition(j)+1;
+        if (p == 0) p = nPartitions()+1;
+        assert(p > 0);
         vec<Lit> clause;
         getHardClause(j).clause.copyTo(clause);
         printf("%d %llu ", p, getMaxSATFormula()->getHardWeight());
@@ -123,10 +126,12 @@ public:
         printf("0\n");
       }
       for (size_t j = 0; j < getMaxSATFormula()->nSoft(); j++) {
-        int p = getSoftClause(j).getPartition();
-        if (p==-1){ // if clause does not have a partition assigned
-          p = softClausePartition(j);
-        }
+        // int p = getSoftClause(j).getPartition();
+        // if (p==-1){ // if clause does not have a partition assigned
+        //   p = softClausePartition(j);
+        // }
+        int p = softClausePartition(j)+1;
+        assert(p > 0);
         vec<Lit> clause;
         getSoftClause(j).clause.copyTo(clause);
         printf("%d %d ", p, 1);

@@ -60,6 +60,9 @@
 #include "algorithms/Alg_PartMSU3.h"
 #include "algorithms/Alg_WBO.h"
 #include "algorithms/Alg_PWCNFMSU3.h"
+#include "algorithms/Alg_PWCNFOLL.h"
+#include "algorithms/Alg_UpMSU3.h"
+#include "algorithms/Alg_UpWBO.h"
 
 #define VER1_(x) #x
 #define VER_(x) VER1_(x)
@@ -187,9 +190,9 @@ int main(int argc, char **argv) {
 
     IntOption algorithm("Open-WBO", "algorithm",
                         "Search algorithm "
-                        "(0=wbo,1=linear-su,2=msu3,3=part-msu3,4=oll,5=best)."
+                        "(0=wbo,1=linear-su,2=msu3,3=part-msu3,4=pwcnf-msu3,5=pwcnf-oll,6=oll,7=up-msu3,8=up-wbo,9=best)."
                         "\n",
-                        5, IntRange(0, 5));
+                        7, IntRange(0, 9));
 
     IntOption partition_strategy("PartMSU3", "partition-strategy",
                                  "Partition strategy (0=sequential, "
@@ -263,6 +266,18 @@ int main(int argc, char **argv) {
     case _ALGORITHM_PWCNFMSU3_:
       S = new PWCNFMSU3(verbosity, pwcnf_mode, pwcnf_limit);
       break;
+
+    case _ALGORITHM_PWCNFOLL_:
+      S = new PWCNFOLL(verbosity, pwcnf_mode, pwcnf_limit);
+      break;
+
+    case _ALGORITHM_UPMSU3_:
+        S = new UpMSU3(verbosity, pwcnf_mode, pwcnf_limit);
+        break;
+
+    case _ALGORITHM_UPWBO_:
+        S = new UpWBO(verbosity, pwcnf_mode, pwcnf_limit);
+        break;    
 
     case _ALGORITHM_BEST_:
       break;

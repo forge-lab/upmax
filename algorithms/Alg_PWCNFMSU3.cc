@@ -3,7 +3,7 @@
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -324,8 +324,6 @@ StatusCode PWCNFMSU3::search_part() {
   lbool res = l_True;
   initRelaxation();
   solver = rebuildSolver();
-  if (_limit != -1)
-    solver->setConfBudget(_limit);
   vec<Lit> assumptions;
   vec<Lit> joinObjFunction;
   vec<Lit> currentObjFunction;
@@ -363,6 +361,8 @@ StatusCode PWCNFMSU3::search_part() {
   printf("c [Begin] Saturation phase\n");
   for (;;) {
 
+    if (_limit != -1)
+      solver->setConfBudget(_limit);
     res = searchSATSolver(solver, assumptions);
     if (res == l_True) {
       nbSatisfiable++;
@@ -490,7 +490,8 @@ StatusCode PWCNFMSU3::search_part() {
   remaining_partitions--;
   if (remaining_partitions == 1 &&  _limit != -1){
           // disable conflict limit
-          solver->setConfBudget(-1);
+          //solver->setConfBudget(-1);
+          solver->budgetOff();
   }
   printf("c Remaining #Partitions= %d\n",remaining_partitions);
 
@@ -506,14 +507,20 @@ StatusCode PWCNFMSU3::search_part() {
   
   for (;;) {
 
+    if (_limit != -1 && remaining_partitions != 1)
+      solver->setConfBudget(_limit);
     res = searchSATSolver(solver, assumptions);
-    if (res == l_True) {
-      nbSatisfiable++;
-      uint64_t newCost = computeCostModel(solver->model);
-      if (newCost < ubCost){
-        saveModel(solver->model);
-        printBound(newCost);
-        ubCost = newCost;
+    //if (res == l_True) {
+    if (res != l_False) {
+      if (res != l_True) assert(remaining_partitions != 1);
+      else {
+        nbSatisfiable++;
+        uint64_t newCost = computeCostModel(solver->model);
+        if (newCost < ubCost){
+          saveModel(solver->model);
+          printBound(newCost);
+          ubCost = newCost;
+        }
       }
 
       if (remaining_partitions == 1){
@@ -527,7 +534,8 @@ StatusCode PWCNFMSU3::search_part() {
         remaining_partitions--;
         if (remaining_partitions == 1 &&  _limit != -1){
           // disable conflict limit
-          solver->setConfBudget(-1);
+          //solver->setConfBudget(-1);
+          solver->budgetOff();
         }
         printf("c Remaining #Partitions= %d\n",remaining_partitions);
 

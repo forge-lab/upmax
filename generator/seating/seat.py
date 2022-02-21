@@ -3,7 +3,7 @@
 import sys
 
 if len(sys.argv) < 6:
-	print "Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=wcnf,1=pwcnf>"
+	print "Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=tables,1=tags>"
 	exit()
 
 # input: tables, min, max, csv, pwcnf (0, 1)

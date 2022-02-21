@@ -1368,6 +1368,9 @@ StatusCode PartMSU3::search() {
     	maxsat_formula->setSoftClausePartition(_graphMappingSoft[i], i); 
     }
 
+    dump2pwcnf();
+    return _UNKNOWN_;
+
       if (nPartitions() <= 1)
         return bmo_single();
         else {
@@ -1384,6 +1387,14 @@ StatusCode PartMSU3::search() {
 		    return _UNKNOWN_;
 		  }
 	}
+
+printf("PARTITIONS %d\n",nPartitions());
+if (nPartitions() == 0) {
+    split(UNFOLDING_MODE, graph_type);
+  }
+printf("PARTITIONS %d\n",nPartitions());
+   dump2pwcnf();
+   return _UNKNOWN_;
 
   if (incremental_strategy == _INCREMENTAL_ITERATIVE_) {
     if (encoding != _CARD_TOTALIZER_) {
