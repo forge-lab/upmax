@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef Alg_PWCNFOLL_h
-#define Alg_PWCNFOLL_h
+#ifndef Alg_UpOLL_h
+#define Alg_UpOLL_h
 
 #include "core/Solver.h"
 
@@ -39,11 +39,11 @@
 namespace openwbo {
 
 //=================================================================================================
-class PWCNFOLL : public MaxSAT_Partition {
+class UpOLL : public MaxSAT_Partition {
 
 public:
   //PWCNFOLL(int verb = _VERBOSITY_MINIMAL_, int enc = _CARD_TOTALIZER_) {
-  PWCNFOLL(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
+  UpOLL(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
     solver = NULL;
     verbosity = verb;
     incremental_strategy = _INCREMENTAL_ITERATIVE_;
@@ -52,7 +52,7 @@ public:
     min_weight = 1;
     _limit = limit;
   }
-  ~PWCNFOLL() {
+  ~UpOLL() {
     if (solver != NULL)
       delete solver;
   }
@@ -70,7 +70,7 @@ public:
            "                                       |\n");
     printf("c |  Algorithm: %23s                                             "
            "                      |\n",
-           "PWCNF OLL");
+           "UpOLL");
     print_Card_configuration(encoding);
     printf("c |                                                                "
            "                                       |\n");
@@ -113,11 +113,7 @@ protected:
   // Soft clauses that are currently in the MaxSAT formula.
   vec<bool> activeSoft;
 
-  uint64_t findNextWeightDiversity(uint64_t weight,
-                                   std::set<Lit> &cardinality_assumptions);
-  uint64_t findNextWeight(uint64_t weight,
-                          std::set<Lit> &cardinality_assumptions);
-
+  
   uint64_t min_weight;
 
   int _partitions;
@@ -128,6 +124,7 @@ protected:
 
   vec< vec<int> > soft_partitions;
   vec< vec<int> > soft_partitions_tmp;
+    vec<bool> activeSoftPartition;
 };
 } // namespace openwbo
 

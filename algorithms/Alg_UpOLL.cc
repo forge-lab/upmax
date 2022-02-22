@@ -26,79 +26,11 @@
  *
  */
 
-#include "Alg_PWCNFOLL.h"
+#include "Alg_UpOLL.h"
 
 using namespace openwbo;
 
-uint64_t PWCNFOLL::findNextWeight(uint64_t weight,
-                             std::set<Lit> &cardinality_assumptions) {
-
-  uint64_t nextWeight = 1;
-  for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-    if (maxsat_formula->getSoftClause(i).weight > nextWeight &&
-        maxsat_formula->getSoftClause(i).weight < weight)
-      nextWeight = maxsat_formula->getSoftClause(i).weight;
-  }
-
-  for (std::set<Lit>::iterator it = cardinality_assumptions.begin();
-       it != cardinality_assumptions.end(); ++it) {
-    assert(boundMapping.find(*it) != boundMapping.end());
-    std::pair<std::pair<int, uint64_t>, uint64_t> soft_id = boundMapping[*it];
-    if (soft_id.second > nextWeight && soft_id.second < weight)
-      nextWeight = soft_id.second;
-  }
-
-  return nextWeight;
-}
-
-uint64_t PWCNFOLL::findNextWeightDiversity(uint64_t weight,
-                                      std::set<Lit> &cardinality_assumptions) {
-
-  assert(nbSatisfiable > 0); // Assumes that unsatSearch was done before.
-
-  uint64_t nextWeight = weight;
-  int nbClauses = 0;
-  std::set<uint64_t> nbWeights;
-  float alpha = 1.25;
-
-  bool findNext = false;
-
-  for (;;) {
-    if (nbSatisfiable > 1 || findNext)
-      nextWeight = findNextWeight(nextWeight, cardinality_assumptions);
-
-    nbClauses = 0;
-    nbWeights.clear();
-    for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-      if (maxsat_formula->getSoftClause(i).weight >= nextWeight) {
-        nbClauses++;
-        nbWeights.insert(maxsat_formula->getSoftClause(i).weight);
-      }
-    }
-
-    for (std::set<Lit>::iterator it = cardinality_assumptions.begin();
-         it != cardinality_assumptions.end(); ++it) {
-      assert(boundMapping.find(*it) != boundMapping.end());
-      std::pair<std::pair<int, uint64_t>, uint64_t> soft_id = boundMapping[*it];
-      if (soft_id.second >= nextWeight) {
-        nbClauses++;
-        nbWeights.insert(soft_id.second);
-      }
-    }
-
-    if ((float)nbClauses / nbWeights.size() > alpha ||
-        (unsigned)nbClauses ==
-            (unsigned)maxsat_formula->nSoft() + cardinality_assumptions.size())
-      break;
-
-    if (nbSatisfiable == 1 && !findNext)
-      findNext = true;
-  }
-
-  return nextWeight;
-}
-
-StatusCode PWCNFOLL::unweighted() {
+StatusCode UpOLL::unweighted() {
 
   lbool res = l_True;
   initRelaxation();
@@ -118,7 +50,7 @@ StatusCode PWCNFOLL::unweighted() {
   vec<Encoder *> soft_cardinality;
 
   int current_partition = 0;
-  vec<bool> activeSoftPartition;
+  activeSoftPartition.clear();
   activeSoftPartition.growTo(maxsat_formula->nSoft(), false);
   
   //int id_partition = 1;
@@ -320,7 +252,7 @@ StatusCode PWCNFOLL::unweighted() {
   }
 }
 
-StatusCode PWCNFOLL::weighted() {
+StatusCode UpOLL::weighted() {
   
   lbool res = l_True;
   initRelaxation();
@@ -339,25 +271,26 @@ StatusCode PWCNFOLL::weighted() {
   std::set<Lit> cardinality_assumptions;
   vec<Encoder *> soft_cardinality;
 
-  min_weight = maxsat_formula->getMaximumWeight();
+  //min_weight = maxsat_formula->getMaximumWeight();
+  min_weight = 1;
   // printf("current weight %d\n",maxsat_formula->getMaximumWeight());
 
-    int current_partition = 0;
-  vec<bool> activeSoftPartition;
+ int current_partition = 0;
+ activeSoftPartition.clear();
   activeSoftPartition.growTo(maxsat_formula->nSoft(), false);
   
-  int id_partition = 1;
-  _partitions = 0;
-  for (int i = 0; i < soft_partitions.size(); i++){
-    if(soft_partitions[i].size() > 0) _partitions++;
-  }
+  //int id_partition = 1;
+  _partitions = soft_partitions.size();
+  // for (int i = 0; i < soft_partitions.size(); i++){
+  //   if(soft_partitions[i].size() > 0) _partitions++;
+  // }
 
   printf("c #Soft Partitions = %d\n",_partitions);
    
-  while(soft_partitions[current_partition].size() == 0)
-    current_partition++;
+  // while(soft_partitions[current_partition].size() == 0)
+  //   current_partition++;
 
-  printf("c Partition #%d= %d\n",id_partition,soft_partitions[current_partition].size());
+  printf("c Partition #%d= %d\n",current_partition+1,soft_partitions[current_partition].size());
 
    for (int i = 0; i < soft_partitions[current_partition].size(); i++){
     activeSoftPartition[soft_partitions[current_partition][i]] = true;
@@ -369,83 +302,37 @@ StatusCode PWCNFOLL::weighted() {
 
   for (;;) {
 
+    if (_limit != -1 && current_partition+1 != _partitions)
+      solver->setConfBudget(_limit);
+    else
+      solver->budgetOff();
     res = searchSATSolver(solver, assumptions);
-    if (res == l_True) {
-      nbSatisfiable++;
-      uint64_t newCost = computeCostModel(solver->model);
-      if (newCost < ubCost || nbSatisfiable == 1) {
-        saveModel(solver->model);
-        printBound(newCost);
-        ubCost = newCost;
+    if (res != l_False) {
+      
+      if (res == l_True){
+        nbSatisfiable++;
+        uint64_t newCost = computeCostModel(solver->model);
+        if (newCost < ubCost) {
+          saveModel(solver->model);
+          printBound(newCost);
+          ubCost = newCost;
+        }
       }
 
-      if (nbSatisfiable == 1) {
-        min_weight =
-            findNextWeightDiversity(min_weight, cardinality_assumptions);
-        // printf("current weight %d\n",min_weight);
-
-        for (int i = 0; i < maxsat_formula->nSoft(); i++)
-          if (maxsat_formula->getSoftClause(i).weight >= min_weight)
-            assumptions.push(~maxsat_formula->getSoftClause(i).assumption_var);
+      if(current_partition+1 == _partitions){
+        printAnswer(_OPTIMUM_);
+        return _OPTIMUM_;
       } else {
-        // compute min weight in soft
-        int not_considered = 0;
-        for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-          if (maxsat_formula->getSoftClause(i).weight < min_weight)
-            not_considered++;
-        }
 
-        // printf("not considered %d\n",not_considered);
+        current_partition++;
+        printf("c Partition #%d= %d\n",current_partition+1,soft_partitions[current_partition].size());
 
-        for (std::set<Lit>::iterator it = cardinality_assumptions.begin();
-             it != cardinality_assumptions.end(); ++it) {
-          assert(boundMapping.find(*it) != boundMapping.end());
-          std::pair<std::pair<int, uint64_t>, uint64_t> soft_id =
-              boundMapping[*it];
-          if (soft_id.second < min_weight)
-            not_considered++;
-        }
-
-        if (not_considered != 0) {
-          min_weight =
-              findNextWeightDiversity(min_weight, cardinality_assumptions);
-
-          // printf("currentWeight %d\n",currentWeight);
-
-          // reset the assumptions
-          assumptions.clear();
-          int active_soft = 0;
-          for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-            if (!activeSoft[i] &&
-                maxsat_formula->getSoftClause(i).weight >= min_weight) {
-              assumptions.push(
-                  ~maxsat_formula->getSoftClause(i).assumption_var);
-              // printf("s assumption
-              // %d\n",var(softClauses[i].assumptionVar)+1);
-            } else
-              active_soft++;
-          }
-
-          // printf("assumptions %d\n",assumptions.size());
-          for (std::set<Lit>::iterator it = cardinality_assumptions.begin();
-               it != cardinality_assumptions.end(); ++it) {
-            assert(boundMapping.find(*it) != boundMapping.end());
-            std::pair<std::pair<int, uint64_t>, uint64_t> soft_id =
-                boundMapping[*it];
-            if (soft_id.second >= min_weight)
-              assumptions.push(~(*it));
-            // printf("c assumption %d\n",var(*it)+1);
-          }
-
-        } else {
-          assert(lbCost == newCost);
-          printAnswer(_OPTIMUM_);
-          return _OPTIMUM_;
+        for (int i = 0; i < soft_partitions[current_partition].size(); i++){
+          activeSoftPartition[soft_partitions[current_partition][i]] = true;
+          assumptions.push(~maxsat_formula->getSoftClause(soft_partitions[current_partition][i]).assumption_var);
         }
       }
-    }
-
-    if (res == l_False) {
+    } else {
 
       // reduce the weighted to the unweighted case
       uint64_t min_core = UINT64_MAX;
@@ -475,18 +362,18 @@ StatusCode PWCNFOLL::weighted() {
       if (verbosity > 0)
         printf("c LB : %-12" PRIu64 "\n", lbCost);
 
-      if (nbSatisfiable == 0) {
-        printAnswer(_UNSATISFIABLE_);
-        return _UNSATISFIABLE_;
-      }
+      // if (nbSatisfiable == 0) {
+      //   printAnswer(_UNSATISFIABLE_);
+      //   return _UNSATISFIABLE_;
+      // }
 
-      if (lbCost == ubCost) {
-        assert(nbSatisfiable > 0);
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       sumSizeCores += solver->conflict.size();
 
@@ -772,8 +659,7 @@ StatusCode PWCNFOLL::weighted() {
       assumptions.clear();
       int active_soft = 0;
       for (int i = 0; i < maxsat_formula->nSoft(); i++) {
-        if (!activeSoft[i] &&
-            maxsat_formula->getSoftClause(i).weight >= min_weight) {
+        if (!activeSoft[i] && activeSoftPartition[i]) {
           assumptions.push(~maxsat_formula->getSoftClause(i).assumption_var);
           // printf("s assumption %d\n",var(softClauses[i].assumptionVar)+1);
         } else
@@ -801,7 +687,7 @@ StatusCode PWCNFOLL::weighted() {
   }
 }
 
-StatusCode PWCNFOLL::search() {
+StatusCode UpOLL::search() {
 
   if (encoding != _CARD_TOTALIZER_) {
     if(print) {
@@ -838,7 +724,7 @@ StatusCode PWCNFOLL::search() {
   |    Rebuilds a SAT solver with the current MaxSAT formula.
   |
   |________________________________________________________________________________________________@*/
-Solver *PWCNFOLL::rebuildSolver() {
+Solver *UpOLL::rebuildSolver() {
 
   Solver *S = newSATSolver();
 
@@ -918,7 +804,7 @@ Solver *PWCNFOLL::rebuildSolver() {
   |      clauses.
   |
   |________________________________________________________________________________________________@*/
-void PWCNFOLL::initRelaxation() {
+void UpOLL::initRelaxation() {
   for (int i = 0; i < maxsat_formula->nSoft(); i++) {
     Lit l = maxsat_formula->newLiteral();
     maxsat_formula->getSoftClause(i).relaxation_vars.push(l);
@@ -927,7 +813,7 @@ void PWCNFOLL::initRelaxation() {
 }
 
 
-void PWCNFOLL::createPartitions() {
+void UpOLL::createPartitions() {
   _partitions = 0;
 
   for (int i = 0; i < maxsat_formula->nPartitions()+1; i++){

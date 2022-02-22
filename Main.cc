@@ -5,7 +5,8 @@
  *
  * MiniSat,  Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
  *           Copyright (c) 2007-2010, Niklas Sorensson
- * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +42,7 @@
 #include <string>
 #include <vector>
 
-#ifdef SIMP
-#include "simp/SimpSolver.h"
-#else
 #include "core/Solver.h"
-#endif
 
 #include "MaxSAT.h"
 #include "MaxTypes.h"
@@ -60,7 +57,7 @@
 #include "algorithms/Alg_PartMSU3.h"
 #include "algorithms/Alg_WBO.h"
 #include "algorithms/Alg_PWCNFMSU3.h"
-#include "algorithms/Alg_PWCNFOLL.h"
+#include "algorithms/Alg_UpOLL.h"
 #include "algorithms/Alg_UpMSU3.h"
 #include "algorithms/Alg_UpWBO.h"
 
@@ -268,7 +265,7 @@ int main(int argc, char **argv) {
       break;
 
     case _ALGORITHM_PWCNFOLL_:
-      S = new PWCNFOLL(verbosity, pwcnf_mode, pwcnf_limit);
+      S = new UpOLL(verbosity, pwcnf_mode, pwcnf_limit);
       break;
 
     case _ALGORITHM_UPMSU3_:
