@@ -67,6 +67,22 @@ public:
 
   StatusCode search(); // WBO search.
 
+    // Print solver configuration.
+  void printConfiguration() {
+
+    if(!print) return;
+
+    printf("c ==========================================[ Solver Settings "
+           "]============================================\n");
+    printf("c |                                                                "
+           "                                       |\n");
+    printf("c |  Algorithm: %23s                                             "
+           "                      |\n",
+           "UpWBO");
+    printf("c |                                                                "
+           "                                       |\n");
+  }
+
 protected:
   // Rebuild MaxSAT solver
   //

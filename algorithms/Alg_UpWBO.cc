@@ -858,11 +858,20 @@ StatusCode UpWBO::weightSearch() {
   unsatSearch();
 
   initAssumptions(assumptions);
-  updateCurrentWeight(weightStrategy);
+  //updateCurrentWeight(weightStrategy);
+  maxsat_formula->setMaximumWeight(1);
   solver = rebuildWeightSolver(weightStrategy);
+
+  _current_partition = 0;
+  initAssumptionsPartition(assumptions);
+  printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());  
 
   for (;;) {
 
+    if (_limit != -1 && _current_partition+1 != _partitions)
+      solver->setConfBudget(_limit);
+    else
+      solver->budgetOff();
     lbool res = searchSATSolver(solver, assumptions);
 
     if (res == l_False) {
@@ -876,43 +885,39 @@ StatusCode UpWBO::weightSearch() {
       relaxCore(solver->conflict, coreCost, assumptions);
       delete solver;
       solver = rebuildWeightSolver(weightStrategy);
-    }
-
+    } else {
     if (res == l_True) {
       nbSatisfiable++;
-      if (nbCurrentSoft == maxsat_formula->nSoft()) {
-        assert(computeCostModel(solver->model) == lbCost);
-        if (lbCost == ubCost && verbosity > 0)
-          printf("c LB = UB\n");
-        if (lbCost < ubCost) {
-          ubCost = lbCost;
+    
+      uint64_t newCost = computeCostModel(solver->model);
+        if (newCost < ubCost){
           saveModel(solver->model);
-          printBound(lbCost);
-        }
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      } else {
-        updateCurrentWeight(weightStrategy);
-        uint64_t cost = computeCostModel(solver->model);
-        if (cost < ubCost) {
-          ubCost = cost;
-          saveModel(solver->model);
-          printBound(ubCost);
+          printBound(newCost);
+          ubCost = newCost;
         }
 
-        if (lbCost == ubCost) {
-          if (verbosity > 0)
-            printf("c LB = UB\n");
+        if (ubCost == 0){
           printAnswer(_OPTIMUM_);
           return _OPTIMUM_;
         }
+      }
 
+      if (_current_partition == _partitions){
+        printAnswer(_OPTIMUM_);
+        return _OPTIMUM_; 
+      } else {
+
+        printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());
+        initAssumptionsPartition(assumptions);
+
+      }  
+
+      // do we need this rebuild?
         delete solver;
         solver = rebuildWeightSolver(weightStrategy);
       }
     }
   }
-}
 
 /*_________________________________________________________________________________________________
   |
@@ -972,11 +977,11 @@ StatusCode UpWBO::normalSearch() {
       delete solver;
       solver = rebuildSolver();
     } else {
-      nbSatisfiable++;
-
+      
       _current_partition++;
 
       if (res == l_True){
+        nbSatisfiable++;
         uint64_t newCost = computeCostModel(solver->model);
         if (newCost < ubCost){
           saveModel(solver->model);
@@ -1015,6 +1020,9 @@ StatusCode UpWBO::search() {
   //   problemType = _UNWEIGHTED_;
   //   weightStrategy = _WEIGHT_NONE_;
   // }
+
+  printConfiguration();
+
   if (maxsat_formula->getMaximumWeight() == 1)
     weightStrategy = _WEIGHT_NONE_;
 

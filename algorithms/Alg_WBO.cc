@@ -289,13 +289,15 @@ Solver *WBO::rebuildHardSolver() {
 void WBO::updateCurrentWeight(int strategy) {
 
   assert(strategy == _WEIGHT_NORMAL_ || strategy == _WEIGHT_DIVERSIFY_);
-
+  
   if (strategy == _WEIGHT_NORMAL_)
-    maxsat_formula->setMaximumWeight(
+    maxsat_formula->setMaximumWeightWBO(
         findNextWeight(maxsat_formula->getMaximumWeight()));
-  else if (strategy == _WEIGHT_DIVERSIFY_)
-    maxsat_formula->setMaximumWeight(
+  else if (strategy == _WEIGHT_DIVERSIFY_){
+    maxsat_formula->setMaximumWeightWBO(
         findNextWeightDiversity(maxsat_formula->getMaximumWeight()));
+  }
+
 }
 
 /*_________________________________________________________________________________________________
@@ -348,6 +350,7 @@ uint64_t WBO::findNextWeightDiversity(uint64_t weight) {
   assert(weightStrategy == _WEIGHT_DIVERSIFY_);
   assert(nbSatisfiable > 0); // Assumes that unsatSearch was done before.
 
+  
   uint64_t nextWeight = weight;
   int nbClauses = 0;
   std::set<uint64_t> nbWeights;
@@ -852,6 +855,7 @@ StatusCode WBO::unsatSearch() {
   |________________________________________________________________________________________________@*/
 StatusCode WBO::weightSearch() {
 
+  
   assert(weightStrategy == _WEIGHT_NORMAL_ ||
          weightStrategy == _WEIGHT_DIVERSIFY_);
 
@@ -987,6 +991,8 @@ StatusCode WBO::search() {
   //   problemType = _UNWEIGHTED_;
   //   weightStrategy = _WEIGHT_NONE_;
   // }
+  printConfiguration();
+
   if (maxsat_formula->getMaximumWeight() == 1)
     weightStrategy = _WEIGHT_NONE_;
 
