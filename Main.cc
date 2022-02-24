@@ -50,13 +50,12 @@
 #include "ParserPB.h"
 #include "ParserPartitions.h"
 
+#include "MaxSAT_Partition.h"
+
 // Algorithms
-#include "algorithms/Alg_LinearSU.h"
 #include "algorithms/Alg_MSU3.h"
 #include "algorithms/Alg_OLL.h"
-#include "algorithms/Alg_PartMSU3.h"
 #include "algorithms/Alg_WBO.h"
-#include "algorithms/Alg_PWCNFMSU3.h"
 #include "algorithms/Alg_UpOLL.h"
 #include "algorithms/Alg_UpMSU3.h"
 #include "algorithms/Alg_UpWBO.h"
@@ -174,8 +173,8 @@ int main(int argc, char **argv) {
 
     StringOption json ("UpMax", "json", "JSON search statistics output destination\n", NULL);
 
-    IntOption pwcnf_limit("PWCNF","limit","Conflict limit for each partition.\n",-1,IntRange(-1,INT32_MAX));
-    IntOption pwcnf_mode("PWCNF","merge","Merge heuristic (0=partition size,1=core size,2=saturation only).\n",0,IntRange(0,2));
+    IntOption pwcnf_limit("UpMax","limit","Conflict limit for each partition.\n",-1,IntRange(-1,INT32_MAX));
+    IntOption pwcnf_mode("UpMax","merge","Merge heuristic (0=partition size,1=core size,2=saturation only).\n",0,IntRange(0,2));
 
     IntOption cpu_lim("UpMax", "cpu-lim",
                       "Limit on CPU time allowed in seconds.\n", 0,
@@ -185,22 +184,21 @@ int main(int argc, char **argv) {
                       "Limit on memory usage in megabytes.\n", 0,
                       IntRange(0, INT32_MAX));
 
+    BoolOption upmax("UpMax", "upmax", "User partitioning.\n", true);
+
+    StringOption upfile("UpMax", "upfile", "PWCNF file with automatic partition.\n", NULL);    
+
+    BoolOption wcnf("UpMax", "wcnf", "Transform PWCNF in WCNF file.\n", false); 
+
     IntOption algorithm("UpMax", "algorithm",
                         "Search algorithm "
-                        "(0=wbo,1=linear-su,2=msu3,3=part-msu3,4=pwcnf-msu3,5=pwcnf-oll,6=oll,7=up-msu3,8=up-wbo,9=best)."
-                        "\n",
-                        7, IntRange(0, 9));
+                        "(0=wbo,1=msu3,2=oll)\n",
+                        1, IntRange(0, 2));
 
-    IntOption partition_strategy("PartMSU3", "partition-strategy",
-                                 "Partition strategy (0=sequential, "
-                                 "1=sequential-sorted, 2=binary)"
-                                 "(only for unsat-based partition algorithms).",
-                                 2, IntRange(0, 2));
-
-    IntOption graph_type("PartMSU3", "graph-type",
-                         "Graph type (0=vig, 1=cvig, 2=res) (only for unsat-"
-                         "based partition algorithms).",
-                         2, IntRange(0, 2));
+    
+    IntOption graph_type("UpMax", "graph-type",
+                         "Graph type (0=vig, 1=cvig, 2=res, 3=random).",
+                         2, IntRange(0, 3));
 
     BoolOption bmo("UpMax", "bmo", "BMO search.\n", true);
 
@@ -319,51 +317,54 @@ int main(int argc, char **argv) {
            "                                       |\n");
 
     
+    if (upfile != NULL){
+        MaxSAT_Partition * mp = new MaxSAT_Partition();
+        mp->loadFormula(maxsat_formula);
+        if (wcnf){
+            mp->split(PWCNF_MODE);
+            mp->printPWCNFtoFile((const char *) upfile, wcnf);    
+        } else {
+            int graphType = graph_type;
+            if (graphType == 3) {
+                // random
+                mp->split(RAND_MODE);
+            } else mp->split(UNFOLDING_MODE, graphType);
+            mp->printPWCNFtoFile((const char *) upfile);
+        }
+        exit(_UNKNOWN_);
+    }
+
 
     switch ((int)algorithm) {
     case _ALGORITHM_WBO_:
-      S = new WBO(verbosity, weight, symmetry, symmetry_lim);
+      if (upmax){
+        S = new UpWBO(verbosity, pwcnf_mode, pwcnf_limit);
+      } else {
+        S = new WBO(verbosity, weight, symmetry, symmetry_lim);
+      }
       break;
 
-    case _ALGORITHM_LINEAR_SU_:
-      S = new LinearSU(verbosity, bmo, cardinality, pb);
-      break;
-
-    case _ALGORITHM_PART_MSU3_:
-      S = new PartMSU3(verbosity, partition_strategy, graph_type, cardinality);
-      break;
-
+    
     case _ALGORITHM_MSU3_:
-        if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
-            S = new MSU3(verbosity);
-        else
-            S = new WMSU3(verbosity);
+        if (upmax){
+            if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
+                S = new UpMSU3(verbosity, pwcnf_mode, pwcnf_limit);
+            else
+                S = new UpWMSU3(verbosity);
+        } else {
+            if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
+                S = new MSU3(verbosity);
+            else
+                S = new WMSU3(verbosity);
+        }
       break;
 
     case _ALGORITHM_OLL_:
-      S = new OLL(verbosity, cardinality);
-      break;
-
-    case _ALGORITHM_PWCNFMSU3_:
-      S = new PWCNFMSU3(verbosity, pwcnf_mode, pwcnf_limit);
-      break;
-
-    case _ALGORITHM_PWCNFOLL_:
-      S = new UpOLL(verbosity, pwcnf_mode, pwcnf_limit);
-      break;
-
-    case _ALGORITHM_UPMSU3_:
-        if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
-            S = new UpMSU3(verbosity, pwcnf_mode, pwcnf_limit);
-        else
-            S = new UpWMSU3(verbosity);
-        break;
-
-    case _ALGORITHM_UPWBO_:
-        S = new UpWBO(verbosity, pwcnf_mode, pwcnf_limit);
-        break;    
-
-    case _ALGORITHM_BEST_:
+        if (upmax){
+            S = new UpOLL(verbosity, pwcnf_mode, pwcnf_limit);
+        } else {
+            S = new OLL(verbosity, cardinality);
+        }
       break;
 
     default:
@@ -371,26 +372,6 @@ int main(int argc, char **argv) {
       printf("s UNKNOWN\n");
       exit(_ERROR_);
     }
-
-    // if (algorithm == _ALGORITHM_BEST_) {
-    //   assert(S == NULL);
-
-    //   if (maxsat_formula->getProblemType() == _UNWEIGHTED_) {
-    //     // Unweighted
-    //     S = new PartMSU3(verbosity, _PART_BINARY_, RES_GRAPH,
-    //                      cardinality);
-    //     S->loadFormula(maxsat_formula);
-
-    //     if (((PartMSU3 *)S)->chooseAlgorithm() == _ALGORITHM_MSU3_) {
-    //       // FIXME: possible memory leak
-    //       S = new MSU3(verbosity);
-    //     }
-
-    //   } else {
-    //     // Weighted
-    //     S = new OLL(verbosity, cardinality);
-    //   }
-    // }
 
     if (S->getMaxSATFormula() == NULL)
       S->loadFormula(maxsat_formula);

@@ -33,6 +33,9 @@
 #include "graph/Graph.h"
 #include "graph/Graph_Communities.h"
 
+#include <iostream>
+#include <fstream> 
+
 #include <gmpxx.h>
 
 using NSPACE::Var;
@@ -50,11 +53,11 @@ typedef struct {
 class MaxSAT_Partition : public MaxSAT {
 
 public:
-  MaxSAT_Partition();
+  MaxSAT_Partition(char * file = NULL);
   ~MaxSAT_Partition();
 
   void splitPWCNF();
-  void split(int mode, int graphType = RES_GRAPH); // Default Value
+  void split(int mode = UNFOLDING_MODE, int graphType = RES_GRAPH); // Default Value
 
   // Set number of Random Partitions
   void setRandomPartitions(int n) { _nRandomPartitions = n; }
@@ -108,38 +111,83 @@ public:
   int nVertexes() { return _graph->nVertexes(); }
   int nEdges() { return _graph->nEdges(); }
 
-  void dump2pwcnf(){
-      // n_vars n_clauses topw n_part
-      printf("p pwcnf %d %d %llu %d\n", getMaxSATFormula()->nVars(), getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft(), getMaxSATFormula()->getHardWeight(), nPartitions()+1);
-      for (size_t j = 0; j < getMaxSATFormula()->nHard(); j++) {
-        // int p = getHardClause(j).getPartition();
-        // if (p==-1){ // if clause does not have a partition assigned
-        //   p = hardClausePartition(j);
-        // }
-        int p = hardClausePartition(j)+1;
-        if (p == 0) p = nPartitions()+1;
+
+void printPWCNFtoFile(std::string filename, bool wcnf = false) {
+
+  std::ofstream file;
+  std::stringstream header;
+  std::stringstream formula;
+  bool extra_partition = false;
+  bool extra_partition_zero = false;
+  int nb_part = nPartitions();
+  int extra_partition_p1 = nb_part;
+  int extra_partition_p2 = nb_part;
+  file.open(filename);
+  //header << " p wcnf " << getMaxSATFormula()->nVars() << " " << getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft() << " " << 
+  //   getMaxSATFormula()->getHardWeight() << " " << nPartitions()+1 <<"\n";
+
+  for (size_t j = 0; j < getMaxSATFormula()->nHard(); j++) {
+        int p = hardClausePartition(j);
+        // double check cases where partition is set to 0 and -1
+        if (p < 0){
+          if (!extra_partition){
+            extra_partition = true;
+            extra_partition_p1 = nb_part+1;
+            nb_part++;
+          }
+          p = extra_partition_p1;
+        }
+        if (p == 0){
+          if (!extra_partition_zero){
+            extra_partition_zero = true;
+            extra_partition_p2 = nb_part+1;
+            nb_part++;
+          }
+          p = extra_partition_p2;
+        }
         assert(p > 0);
         vec<Lit> clause;
         getHardClause(j).clause.copyTo(clause);
-        printf("%d %llu ", p, getMaxSATFormula()->getHardWeight());
-        printClause(clause);
-        printf("0\n");
+
+        if (!wcnf) formula << p << " " << getMaxSATFormula()->getHardWeight() << " ";
+        else formula << getMaxSATFormula()->getHardWeight() << " ";
+        printClause(clause, formula);
+        formula << "0\n";
       }
       for (size_t j = 0; j < getMaxSATFormula()->nSoft(); j++) {
-        // int p = getSoftClause(j).getPartition();
-        // if (p==-1){ // if clause does not have a partition assigned
-        //   p = softClausePartition(j);
-        // }
-        int p = softClausePartition(j)+1;
+        int p = softClausePartition(j);
+        if (p < 0){
+          if (!extra_partition){
+            extra_partition = true;
+            extra_partition_p1 = nb_part+1;
+            nb_part++;
+          }
+          p = extra_partition_p1;
+        }
+        if (p == 0){
+          if (!extra_partition_zero){
+            extra_partition_zero = true;
+            extra_partition_p2 = nb_part+1;
+            nb_part++;
+          }
+          p = extra_partition_p2;
+        }
         assert(p > 0);
         vec<Lit> clause;
         getSoftClause(j).clause.copyTo(clause);
-        printf("%d %d ", p, 1);
-        printClause(clause);
-        printf("0\n");
+        if (!wcnf) formula << p << " " << getSoftClause(j).weight << " ";
+        else formula << getSoftClause(j).weight << " ";
+        printClause(clause, formula);
+        formula << "0\n";
       }
-  }
 
+  if (!wcnf) header << "p pwcnf " << getMaxSATFormula()->nVars() << " " << getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft() << " " << getMaxSATFormula()->getHardWeight() << " " << nb_part <<"\n";
+  else header << "p wcnf " << getMaxSATFormula()->nVars() << " " << getMaxSATFormula()->nHard()+getMaxSATFormula()->nSoft() << " " << getMaxSATFormula()->getHardWeight() << "\n";
+
+  file << header.rdbuf();
+  file << formula.rdbuf();
+  file.close();
+}
 
 protected:
   void init();
@@ -163,6 +211,7 @@ protected:
   int markUnassignedLiterals(vec<Lit> &c, int *markedLits, bool v);
 
   void printClause(vec<Lit> &sc);
+  void printClause(vec<Lit> &sc, std::stringstream &ss);
 
 protected:
   Solver *_solver;
@@ -178,6 +227,8 @@ protected:
 
   Graph *_graph;
   Graph_Communities _gc;
+
+  char * _filename;
 };
 
 } // namespace openwbo
