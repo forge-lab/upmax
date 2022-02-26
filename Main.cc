@@ -320,6 +320,7 @@ int main(int argc, char **argv) {
     if (upfile != NULL){
         MaxSAT_Partition * mp = new MaxSAT_Partition();
         mp->loadFormula(maxsat_formula);
+        mp->init();
         if (wcnf){
             mp->split(PWCNF_MODE);
             mp->printPWCNFtoFile((const char *) upfile, wcnf);    

@@ -189,8 +189,9 @@ void printPWCNFtoFile(std::string filename, bool wcnf = false) {
   file.close();
 }
 
-protected:
   void init();
+
+protected:
 
   void splitRandom();
 
