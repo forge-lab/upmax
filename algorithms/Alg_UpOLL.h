@@ -1,9 +1,10 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax, Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,53 +26,41 @@
  *
  */
 
-#ifndef Alg_LinearSU_h
-#define Alg_LinearSU_h
+#ifndef Alg_UpOLL_h
+#define Alg_UpOLL_h
 
-#ifdef SIMP
-#include "simp/SimpSolver.h"
-#else
 #include "core/Solver.h"
-#endif
 
 #include "../Encoder.h"
-#include "../MaxSAT.h"
+#include "../MaxSAT_Partition.h"
 #include <map>
 #include <set>
-#include <vector>
-
-using NSPACE::vec;
-using NSPACE::Lit;
 
 namespace openwbo {
 
 //=================================================================================================
-class LinearSU : public MaxSAT {
+class UpOLL : public MaxSAT_Partition {
 
 public:
-  LinearSU(int verb = _VERBOSITY_MINIMAL_, bool bmo = true,
-           int enc = _CARD_MTOTALIZER_, int pb = _PB_SWC_)
-      : solver(NULL), is_bmo(false) {
-    pb_encoding = pb;
+  //PWCNFOLL(int verb = _VERBOSITY_MINIMAL_, int enc = _CARD_TOTALIZER_) {
+  UpOLL(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
+    solver = NULL;
     verbosity = verb;
-    bmoMode = bmo;
-    encoding = enc;
-    encoder.setCardEncoding(encoding);
-    encoder.setPBEncoding(pb);
+    incremental_strategy = _INCREMENTAL_ITERATIVE_;
+    encoding = _CARD_TOTALIZER_;
+    encoder.setCardEncoding(_CARD_TOTALIZER_);
+    min_weight = 1;
+    _limit = limit;
   }
-
-  ~LinearSU() {
+  ~UpOLL() {
     if (solver != NULL)
       delete solver;
-
-    objFunction.clear();
-    coeffs.clear();
   }
 
-  StatusCode search(); // Linear search.
+  StatusCode search();
 
   // Print solver configuration.
-  void printConfiguration(bool bmo, int ptype) {
+  void printConfiguration() {
 
     if(!print) return;
 
@@ -79,11 +68,10 @@ public:
            "]============================================\n");
     printf("c |                                                                "
            "                                       |\n");
-    print_LinearSU_configuration();
-    if (bmo || ptype == _UNWEIGHTED_)
-      print_Card_configuration(encoder.getCardEncoding());
-    else
-      print_PB_configuration(encoder.getPBEncoding());
+    printf("c |  Algorithm: %23s                                             "
+           "                      |\n",
+           "UpOLL");
+    print_Card_configuration(encoding);
     printf("c |                                                                "
            "                                       |\n");
   }
@@ -91,42 +79,52 @@ public:
 protected:
   // Rebuild MaxSAT solver
   //
-  // Rebuild MaxSAT solver with BMO algorithm.
-  Solver *rebuildBMO(vec<vec<Lit>> &functions, vec<int> &weights,
-                     uint64_t currentWeight);
-  Solver *rebuildSolver(uint64_t min_weight = 1); // Rebuild MaxSAT solver.
-
-  // Linear search algorithms.
-  //
-  StatusCode normalSearch(); // Classic linear search algorithm.
-  StatusCode bmoSearch();    // Linear search algorithm with lexicographical order.
-
-  // Greater than comparator.
-  bool static greaterThan(uint64_t i, uint64_t j) { return (i > j); }
+  Solver *rebuildSolver(); // Rebuild MaxSAT solver.
 
   // Other
   void initRelaxation(); // Relaxes soft clauses.
 
-  // Print LinearSU configuration.
-  void print_LinearSU_configuration();
-
-  // savePhase
-  void savePhase(Solver * solver);
+  StatusCode unweighted();
+  StatusCode weighted();
 
   Solver *solver;  // SAT Solver used as a black box.
   Encoder encoder; // Interface for the encoder of constraints to CNF.
-  int encoding;    // Encoding for cardinality constraints.
-  int pb_encoding;
 
-  bool bmoMode;  // Enables BMO mode.
-  bool allFalse; // Forces relaxation variables to be false.
+  // Controls the incremental strategy used by MSU3 algorithms.
+  int incremental_strategy;
+  // Controls the cardinality encoding used by MSU3 algorithms.
+  int encoding;
 
-  vec<Lit> objFunction; // Literals to be used in the constraint that excludes
-                        // models.
+  // Literals to be used in the constraint that excludes models.
+  vec<Lit> objFunction;
   vec<uint64_t> coeffs; // Coefficients of the literals that are used in the
                         // constraint that excludes models.
 
-  bool is_bmo; // Stores if the formula is BMO or not.
+  std::map<Lit, int> coreMapping; // Mapping between the assumption literal and
+                                  // the respective soft clause.
+
+  std::map<Lit, int>
+      coreCardinality; // Mapping between the assumption literal and
+                       // the respective soft clause.
+
+  // lit -> <ID, bound, weight>
+  std::map<Lit, std::pair<std::pair<int, uint64_t>, uint64_t>> boundMapping;
+
+  // Soft clauses that are currently in the MaxSAT formula.
+  vec<bool> activeSoft;
+
+  
+  uint64_t min_weight;
+
+  int _partitions;
+  int _mode;
+  int _limit;
+
+  void createPartitions();
+
+  vec< vec<int> > soft_partitions;
+  vec< vec<int> > soft_partitions_tmp;
+    vec<bool> activeSoftPartition;
 };
 } // namespace openwbo
 

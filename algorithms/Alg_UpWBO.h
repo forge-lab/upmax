@@ -25,17 +25,13 @@
  *
  */
 
-#ifndef Alg_WBO_h
-#define Alg_WBO_h
+#ifndef Alg_UpWBO_h
+#define Alg_UpWBO_h
 
-#ifdef SIMP
-#include "simp/SimpSolver.h"
-#else
 #include "core/Solver.h"
-#endif
 
 #include "../Encoder.h"
-#include "../MaxSAT.h"
+#include "../MaxSAT_Partition.h"
 #include "../MaxTypes.h"
 #include "utils/System.h"
 #include <map>
@@ -44,30 +40,34 @@
 
 namespace openwbo {
 
-class WBO : public MaxSAT {
+class UpWBO : public MaxSAT_Partition {
 
 public:
   // NOTE: currently the encoding is not set as an input parameter.
-  WBO(int verb = _VERBOSITY_MINIMAL_, int weight = _WEIGHT_NONE_,
-      bool symmetry = true, int limit = INT32_MAX) {
+  // UpWBO(int verb = _VERBOSITY_MINIMAL_, int weight = _WEIGHT_NONE_,
+  //     bool symmetry = true, int limit = INT32_MAX) {
+  UpWBO(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
     solver = NULL;
     verbosity = verb;
 
     nbCurrentSoft = 0;
-    weightStrategy = weight;
+    weightStrategy = _WEIGHT_NONE_;
 
-    symmetryStrategy = symmetry;
-    symmetryBreakingLimit = limit;
+    symmetryStrategy = true;
+    symmetryBreakingLimit = 500000; // old limit
+
+    _current_partition = 0;
+    _limit = limit;
   }
 
-  ~WBO() {
+  ~UpWBO() {
     if (solver != NULL)
       delete solver;
   }
 
   StatusCode search(); // WBO search.
 
-  // Print solver configuration.
+    // Print solver configuration.
   void printConfiguration() {
 
     if(!print) return;
@@ -78,11 +78,10 @@ public:
            "                                       |\n");
     printf("c |  Algorithm: %23s                                             "
            "                      |\n",
-           "WBO");
+           "UpWBO");
     printf("c |                                                                "
            "                                       |\n");
   }
-
 
 protected:
   // Rebuild MaxSAT solver
@@ -154,6 +153,17 @@ protected:
                                                       // clauses (prevents
                                                       // duplication).
   int symmetryBreakingLimit; // Limit on the number of symmetry clauses.
+
+  void createPartitions();
+  vec<bool> _activeSoftPartition;
+  int _current_partition;
+  int _partitions;
+
+  vec< vec<int> > soft_partitions;
+  vec< vec<int> > soft_partitions_tmp;
+  void initAssumptionsPartition(vec<Lit> &assumps);
+  int _limit;
+
 };
 } // namespace openwbo
 

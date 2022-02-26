@@ -1,9 +1,9 @@
 /*!
- * \author Ruben Martins - rubenm@cs.cmu.edu
+ * \author Ruben Martins - ruben@sat.inesc-id.pt
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,45 +25,38 @@
  *
  */
 
-#ifndef PWCNFMSU3_H_
-#define PWCNFMSU3_H_
+#ifndef Alg_UpMSU3_h
+#define Alg_UpMSU3_h
 
-#ifdef SIMP
-#include "simp/SimpSolver.h"
-#else
 #include "core/Solver.h"
-#endif
 
 #include "../Encoder.h"
 #include "../MaxSAT_Partition.h"
 #include <algorithm>
-#include <deque>
 #include <map>
 #include <set>
 
 namespace openwbo {
 
-class PWCNFMSU3 : public MaxSAT_Partition {
+//=================================================================================================
+class UpMSU3 : public MaxSAT_Partition {
 
 public:
-  PWCNFMSU3(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
+  UpMSU3(int verb = _VERBOSITY_SOME_, int mode = _SIZE_, int limit = -1) {
+  //UpMSU3(int verb = _VERBOSITY_MINIMAL_) {
     solver = NULL;
     verbosity = verb;
     incremental_strategy = _INCREMENTAL_ITERATIVE_;
     encoding = _CARD_TOTALIZER_;
     encoder.setCardEncoding(encoding);
-    _partitions = 0;
-    _mode = mode;
     _limit = limit;
   }
-
-  virtual ~PWCNFMSU3() {
-    if (this->solver != NULL) {
-      delete this->solver;
-    }
+  ~UpMSU3() {
+    if (solver != NULL)
+      delete solver;
   }
 
-  StatusCode search();
+  StatusCode search(); // MSU3 search.
 
   // Print solver configuration.
   void printConfiguration() {
@@ -75,39 +68,28 @@ public:
     printf("c |                                                                "
            "                                       |\n");
 
-    print_PWCNFMSU3_configuration();
-    print_Card_configuration(encoding);
+    print_MSU3_configuration();
+    print_Card_configuration(_CARD_TOTALIZER_);
   }
 
-  // void createGraph() {
-  //   if (nPartitions() == 0) {
-  //     split(UNFOLDING_MODE, graph_type);
-  //   }
-  // }
-
 protected:
-  // Print PartMSU3 configuration.
-  void print_PWCNFMSU3_configuration();
+  // Print MSU3 configuration.
+  void print_MSU3_configuration();
 
   // Rebuild MaxSAT solver
   //
   Solver *rebuildSolver(); // Rebuild MaxSAT solver.
 
-  StatusCode search_part(); // MSU3 that uses a binary tree to guide the partition
-                          // merging process
-  StatusCode search_single();
+  StatusCode MSU3_none();      // Non-incremental MSU3.
+  StatusCode MSU3_blocking();  // Incremental Blocking MSU3.
+  StatusCode MSU3_weakening(); // Incremental Weakening MSU3.
+  StatusCode MSU3_iterative(); // Incremental Iterative Encoding MSU3.
+  StatusCode MSU3_bmo(); 
 
   // Other
   void initRelaxation(); // Relaxes soft clauses.
-  void createPartitions();
-  int merge_part(int mode, vec<Lit>& assump);
 
-  StatusCode bmo_part();
-  StatusCode bmo_single();
-
-  //StatusCode enumerate_opt(Solver* solver, vec<Lit>& assumptions);
-
-  Solver *solver; // SAT Solver used as a black box.
+  Solver *solver;  // SAT Solver used as a black box.
   Encoder encoder; // Interface for the encoder of constraints to CNF.
 
   // Controls the incremental strategy used by MSU3 algorithms.
@@ -126,19 +108,16 @@ protected:
   // Soft clauses that are currently in the MaxSAT formula.
   vec<bool> activeSoft;
 
-
-  vec< vec<int> > soft_partitions;
-  vec<uint64_t> lb_partitions;
-  vec<Encoder*> encoder_partitions;
-  vec< vec<int> > merged_partitions;
-  vec< vec<Lit> > lits_partitions;
-  vec<bool> active_partitions;  
-  
+  // UpMax
   int _partitions;
   int _mode;
   int _limit;
-};
 
+  void createPartitions();
+
+  vec< vec<int> > soft_partitions;
+  vec< vec<int> > soft_partitions_tmp;
+};
 } // namespace openwbo
 
-#endif /* PARTMSU3_H_ */
+#endif

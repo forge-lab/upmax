@@ -5,7 +5,8 @@
  *
  * MiniSat,  Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
  *           Copyright (c) 2007-2010, Niklas Sorensson
- * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +42,7 @@
 #include <string>
 #include <vector>
 
-#ifdef SIMP
-#include "simp/SimpSolver.h"
-#else
 #include "core/Solver.h"
-#endif
 
 #include "MaxSAT.h"
 #include "MaxTypes.h"
@@ -53,13 +50,17 @@
 #include "ParserPB.h"
 #include "ParserPartitions.h"
 
+#include "MaxSAT_Partition.h"
+
 // Algorithms
-#include "algorithms/Alg_LinearSU.h"
 #include "algorithms/Alg_MSU3.h"
 #include "algorithms/Alg_OLL.h"
-#include "algorithms/Alg_PartMSU3.h"
 #include "algorithms/Alg_WBO.h"
-#include "algorithms/Alg_PWCNFMSU3.h"
+#include "algorithms/Alg_UpOLL.h"
+#include "algorithms/Alg_UpMSU3.h"
+#include "algorithms/Alg_UpWBO.h"
+#include "algorithms/Alg_WMSU3.h"
+#include "algorithms/Alg_UpWMSU3.h"
 
 #define VER1_(x) #x
 #define VER_(x) VER1_(x)
@@ -142,13 +143,11 @@ void limitTime(uint32_t /*max_cpu_time*/)
 
 int main(int argc, char **argv) {
   printf(
-      "c\nc Open-WBO:\t a Modular MaxSAT Solver -- based on %s (%s version)\n",
+      "c\nc UpMax:\t User partitioning for MaxSAT -- based on %s (%s version)\n",
       SATVER, VER);
-  printf("c Version:\t September 2018 -- Release: 2.1\n");
-  printf("c Authors:\t Ruben Martins, Vasco Manquinho, Ines Lynce\n");
-  printf("c Contributors:\t Miguel Neves, Saurabh Joshi, Norbert Manthey, Mikolas Janota\n");
-  printf("c Contact:\t open-wbo@sat.inesc-id.pt -- "
-         "http://sat.inesc-id.pt/open-wbo/\nc\n");
+  printf("c Version:\t February 2022\n");
+  printf("c Authors:\t Pedro Orvalho, Vasco Manquinho,  Ruben Martins\n");
+  printf("c Contact:\t rubenm@andrew.cmu.edu\n");
   try {
     NSPACE::setUsageHelp("c USAGE: %s [options] <input-file>\n\n");
 
@@ -161,48 +160,47 @@ int main(int argc, char **argv) {
         "c WARNING: for repeatability, setting FPU to use double precision\n");
 #endif
 
-    BoolOption allopts("Open-WBO", "all-opt", "Finds all optimal solutions.\n", false);
-    BoolOption allvars("Open-WBO", "all-vars", "Uses all variables to find optimal solutions.\n", false);
+    BoolOption allopts("UpMax", "all-opt", "Finds all optimal solutions.\n", false);
+    BoolOption allvars("UpMax", "all-vars", "Uses all variables to find optimal solutions.\n", false);
 
-    BoolOption printmodel("Open-WBO", "print-model", "Print model.\n", true);
+    BoolOption printmodel("UpMax", "print-model", "Print model.\n", true);
 
-    StringOption printsoft("Open-WBO", "print-unsat-soft", "Print unsatisfied soft claues in the optimal assignment.\n", NULL);
+    StringOption printsoft("UpMax", "print-unsat-soft", "Print unsatisfied soft claues in the optimal assignment.\n", NULL);
 
-    IntOption verbosity("Open-WBO", "verbosity",
+    IntOption verbosity("UpMax", "verbosity",
                         "Verbosity level (0=minimal, 1=more).\n", 0,
                         IntRange(0, 1));
 
-    StringOption json ("Open-WBO", "json", "JSON search statistics output destination\n", NULL);
+    StringOption json ("UpMax", "json", "JSON search statistics output destination\n", NULL);
 
-    IntOption pwcnf_limit("PWCNF","limit","Conflict limit for each partition.\n",-1,IntRange(-1,INT32_MAX));
-    IntOption pwcnf_mode("PWCNF","merge","Merge heuristic (0=partition size,1=core size,2=saturation only).\n",0,IntRange(0,2));
+    IntOption pwcnf_limit("UpMax","limit","Conflict limit for each partition.\n",-1,IntRange(-1,INT32_MAX));
+    IntOption pwcnf_mode("UpMax","merge","Merge heuristic (0=partition size,1=core size,2=saturation only).\n",0,IntRange(0,2));
 
-    IntOption cpu_lim("Open-WBO", "cpu-lim",
+    IntOption cpu_lim("UpMax", "cpu-lim",
                       "Limit on CPU time allowed in seconds.\n", 0,
                       IntRange(0, INT32_MAX));
 
-    IntOption mem_lim("Open-WBO", "mem-lim",
+    IntOption mem_lim("UpMax", "mem-lim",
                       "Limit on memory usage in megabytes.\n", 0,
                       IntRange(0, INT32_MAX));
 
-    IntOption algorithm("Open-WBO", "algorithm",
+    BoolOption upmax("UpMax", "upmax", "User partitioning.\n", true);
+
+    StringOption upfile("UpMax", "upfile", "PWCNF file with automatic partition.\n", NULL);    
+
+    BoolOption wcnf("UpMax", "wcnf", "Transform PWCNF in WCNF file.\n", false); 
+
+    IntOption algorithm("UpMax", "algorithm",
                         "Search algorithm "
-                        "(0=wbo,1=linear-su,2=msu3,3=part-msu3,4=oll,5=best)."
-                        "\n",
-                        5, IntRange(0, 5));
+                        "(0=wbo,1=msu3,2=oll)\n",
+                        1, IntRange(0, 2));
 
-    IntOption partition_strategy("PartMSU3", "partition-strategy",
-                                 "Partition strategy (0=sequential, "
-                                 "1=sequential-sorted, 2=binary)"
-                                 "(only for unsat-based partition algorithms).",
-                                 2, IntRange(0, 2));
+    
+    IntOption graph_type("UpMax", "graph-type",
+                         "Graph type (0=vig, 1=cvig, 2=res, 3=random).",
+                         2, IntRange(0, 3));
 
-    IntOption graph_type("PartMSU3", "graph-type",
-                         "Graph type (0=vig, 1=cvig, 2=res) (only for unsat-"
-                         "based partition algorithms).",
-                         2, IntRange(0, 2));
-
-    BoolOption bmo("Open-WBO", "bmo", "BMO search.\n", true);
+    BoolOption bmo("UpMax", "bmo", "BMO search.\n", true);
 
     IntOption cardinality("Encodings", "cardinality",
                           "Cardinality encoding (0=cardinality networks, "
@@ -215,7 +213,7 @@ int main(int argc, char **argv) {
     IntOption pb("Encodings", "pb", "PB encoding (0=SWC,1=GTE,2=Adder).\n", 1,
                  IntRange(0, 2));
 
-    IntOption formula("Open-WBO", "formula",
+    IntOption formula("UpMax", "formula",
                       "Type of formula (0=WCNF, 1=OPB, 2=PWCNF).\n", 0, IntRange(0, 2));
 
     IntOption weight(
@@ -238,40 +236,6 @@ int main(int argc, char **argv) {
 
     double initial_time = cpuTime();
     MaxSAT *S = NULL;
-
-    switch ((int)algorithm) {
-    case _ALGORITHM_WBO_:
-      S = new WBO(verbosity, weight, symmetry, symmetry_lim);
-      break;
-
-    case _ALGORITHM_LINEAR_SU_:
-      S = new LinearSU(verbosity, bmo, cardinality, pb);
-      break;
-
-    case _ALGORITHM_PART_MSU3_:
-      S = new PartMSU3(verbosity, partition_strategy, graph_type, cardinality);
-      break;
-
-    case _ALGORITHM_MSU3_:
-      S = new MSU3(verbosity);
-      break;
-
-    case _ALGORITHM_OLL_:
-      S = new OLL(verbosity, cardinality);
-      break;
-
-    case _ALGORITHM_PWCNFMSU3_:
-      S = new PWCNFMSU3(verbosity, pwcnf_mode, pwcnf_limit);
-      break;
-
-    case _ALGORITHM_BEST_:
-      break;
-
-    default:
-      printf("c Error: Invalid MaxSAT algorithm.\n");
-      printf("s UNKNOWN\n");
-      exit(_ERROR_);
-    }
 
     signal(SIGXCPU, SIGINT_exit);
     signal(SIGTERM, SIGINT_exit);
@@ -352,24 +316,62 @@ int main(int argc, char **argv) {
     printf("c |                                                                "
            "                                       |\n");
 
-    if (algorithm == _ALGORITHM_BEST_) {
-      assert(S == NULL);
-
-      if (maxsat_formula->getProblemType() == _UNWEIGHTED_) {
-        // Unweighted
-        S = new PartMSU3(verbosity, _PART_BINARY_, RES_GRAPH,
-                         cardinality);
-        S->loadFormula(maxsat_formula);
-
-        if (((PartMSU3 *)S)->chooseAlgorithm() == _ALGORITHM_MSU3_) {
-          // FIXME: possible memory leak
-          S = new MSU3(verbosity);
+    
+    if (upfile != NULL){
+        MaxSAT_Partition * mp = new MaxSAT_Partition();
+        mp->loadFormula(maxsat_formula);
+        mp->init();
+        if (wcnf){
+            mp->split(PWCNF_MODE);
+            mp->printPWCNFtoFile((const char *) upfile, wcnf);    
+        } else {
+            int graphType = graph_type;
+            if (graphType == 3) {
+                // random
+                mp->split(RAND_MODE);
+            } else mp->split(UNFOLDING_MODE, graphType);
+            mp->printPWCNFtoFile((const char *) upfile);
         }
+        exit(_UNKNOWN_);
+    }
 
+
+    switch ((int)algorithm) {
+    case _ALGORITHM_WBO_:
+      if (upmax){
+        S = new UpWBO(verbosity, pwcnf_mode, pwcnf_limit);
       } else {
-        // Weighted
-        S = new OLL(verbosity, cardinality);
+        S = new WBO(verbosity, weight, symmetry, symmetry_lim);
       }
+      break;
+
+    
+    case _ALGORITHM_MSU3_:
+        if (upmax){
+            if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
+                S = new UpMSU3(verbosity, pwcnf_mode, pwcnf_limit);
+            else
+                S = new UpWMSU3(verbosity);
+        } else {
+            if(maxsat_formula->getProblemType() == _UNWEIGHTED_)
+                S = new MSU3(verbosity);
+            else
+                S = new WMSU3(verbosity);
+        }
+      break;
+
+    case _ALGORITHM_OLL_:
+        if (upmax){
+            S = new UpOLL(verbosity, pwcnf_mode, pwcnf_limit);
+        } else {
+            S = new OLL(verbosity, cardinality);
+        }
+      break;
+
+    default:
+      printf("c Error: Invalid MaxSAT algorithm.\n");
+      printf("s UNKNOWN\n");
+      exit(_ERROR_);
     }
 
     if (S->getMaxSATFormula() == NULL)

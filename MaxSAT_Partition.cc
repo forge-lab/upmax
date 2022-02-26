@@ -35,7 +35,7 @@ using namespace openwbo;
 
 #define _EDGE_LIMIT_ 50000000
 
-MaxSAT_Partition::MaxSAT_Partition() {
+MaxSAT_Partition::MaxSAT_Partition(char * file) {
   _solver = NULL;
 
   _nRandomPartitions = 16;
@@ -43,6 +43,8 @@ MaxSAT_Partition::MaxSAT_Partition() {
   _randomSeed = 0;
 
   _graph = NULL;
+
+  _filename = file;
 }
 
 MaxSAT_Partition::~MaxSAT_Partition() {
@@ -116,8 +118,7 @@ void MaxSAT_Partition::split(int mode, int graphType) {
 }
 
 void MaxSAT_Partition::splitPWCNF() {
-  printf("%d\n",maxsat_formula->nPartitions());
-  _nPartitions = maxsat_formula->nPartitions();
+    _nPartitions = maxsat_formula->nPartitions();
   _partitions.growTo(_nPartitions);
 
   for (int i = 0; i < maxsat_formula->nSoft(); i++) {
@@ -168,6 +169,12 @@ bool MaxSAT_Partition::isUnsatisfied(vec<Lit> &sc) {
 void MaxSAT_Partition::printClause(vec<Lit> &sc) {
   for (int i = 0; i < sc.size(); i++)
     printf("%d ", (sign(sc[i]) ? -(var(sc[i]) + 1) : (var(sc[i]) + 1)));
+}
+
+void MaxSAT_Partition::printClause(vec<Lit> &sc, std::stringstream &ss) {
+  for (int i = 0; i < sc.size(); i++){
+    ss << (sign(sc[i]) ? -(var(sc[i]) + 1) : (var(sc[i]) + 1)) << " ";
+  }
 }
 
 void MaxSAT_Partition::buildPartitions(int graphType) {
@@ -401,7 +408,7 @@ Graph *MaxSAT_Partition::buildVIGGraph(bool weighted) {
     }
 
     if (nEdges >= _EDGE_LIMIT_) {
-      // cout << "c Graph is too large." << endl;
+      cout << "c Graph is too large." << endl;
       delete[] graphWeight;
       delete g;
       return NULL;
@@ -436,7 +443,7 @@ Graph *MaxSAT_Partition::buildVIGGraph(bool weighted) {
     }
 
     if (nEdges >= _EDGE_LIMIT_) {
-      // cout << "c Graph is too large." << endl;
+      cout << "c Graph is too large." << endl;
       delete[] graphWeight;
       delete g;
       return NULL;

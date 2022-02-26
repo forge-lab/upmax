@@ -147,6 +147,11 @@ public:
   void setMaximumWeight(uint64_t weight); // Set initial 'currentWeight'.
   uint64_t getMaximumWeight();            // Get 'currentWeight'.
 
+  void setMaximumWeightWBO(uint64_t weight) {
+  if (weight != hard_weight)
+    max_soft_weight = weight;
+  }
+
   void setHardWeight(uint64_t weight); // Set initial 'hardWeight'.
   uint64_t getHardWeight() { return hard_weight; }
 

@@ -25,7 +25,7 @@
  *
  */
 
-#include "Alg_WBO.h"
+#include "Alg_UpWBO.h"
 
 using namespace openwbo;
 
@@ -62,7 +62,7 @@ using namespace openwbo;
   |        working MaxSAT formula.
   |
   |________________________________________________________________________________________________@*/
-Solver *WBO::rebuildWeightSolver(int strategy) {
+Solver *UpWBO::rebuildWeightSolver(int strategy) {
 
   assert(strategy == _WEIGHT_NORMAL_ || strategy == _WEIGHT_DIVERSIFY_);
 
@@ -146,7 +146,7 @@ Solver *WBO::rebuildWeightSolver(int strategy) {
   |    * Assumes that the weight strategy is '_WEIGHT_NONE_'.
   |
   |________________________________________________________________________________________________@*/
-Solver *WBO::rebuildSolver() {
+Solver *UpWBO::rebuildSolver() {
 
   assert(weightStrategy == _WEIGHT_NONE_);
 
@@ -221,7 +221,7 @@ Solver *WBO::rebuildSolver() {
   |    Used for testing if the MaxSAT formula is unsatisfiable.
   |
   |________________________________________________________________________________________________@*/
-Solver *WBO::rebuildHardSolver() {
+Solver *UpWBO::rebuildHardSolver() {
 
   Solver *S = newSATSolver();
 
@@ -286,18 +286,16 @@ Solver *WBO::rebuildHardSolver() {
   |    * 'currentWeight' is updated by this method.
   |
   |________________________________________________________________________________________________@*/
-void WBO::updateCurrentWeight(int strategy) {
+void UpWBO::updateCurrentWeight(int strategy) {
 
   assert(strategy == _WEIGHT_NORMAL_ || strategy == _WEIGHT_DIVERSIFY_);
-  
-  if (strategy == _WEIGHT_NORMAL_)
-    maxsat_formula->setMaximumWeightWBO(
-        findNextWeight(maxsat_formula->getMaximumWeight()));
-  else if (strategy == _WEIGHT_DIVERSIFY_){
-    maxsat_formula->setMaximumWeightWBO(
-        findNextWeightDiversity(maxsat_formula->getMaximumWeight()));
-  }
 
+  if (strategy == _WEIGHT_NORMAL_)
+    maxsat_formula->setMaximumWeight(
+        findNextWeight(maxsat_formula->getMaximumWeight()));
+  else if (strategy == _WEIGHT_DIVERSIFY_)
+    maxsat_formula->setMaximumWeight(
+        findNextWeightDiversity(maxsat_formula->getMaximumWeight()));
 }
 
 /*_________________________________________________________________________________________________
@@ -313,7 +311,7 @@ void WBO::updateCurrentWeight(int strategy) {
   |      Satisfiability. ECAI 2012: 913-914
   |
   |________________________________________________________________________________________________@*/
-uint64_t WBO::findNextWeight(uint64_t weight) {
+uint64_t UpWBO::findNextWeight(uint64_t weight) {
 
   uint64_t nextWeight = 1;
   for (int i = 0; i < maxsat_formula->nSoft(); i++) {
@@ -345,12 +343,11 @@ uint64_t WBO::findNextWeight(uint64_t weight) {
   |      SAT-Based Weighted MaxSAT Solvers. CP 2012: 86-101
   |
   |________________________________________________________________________________________________@*/
-uint64_t WBO::findNextWeightDiversity(uint64_t weight) {
+uint64_t UpWBO::findNextWeightDiversity(uint64_t weight) {
 
   assert(weightStrategy == _WEIGHT_DIVERSIFY_);
   assert(nbSatisfiable > 0); // Assumes that unsatSearch was done before.
 
-  
   uint64_t nextWeight = weight;
   int nbClauses = 0;
   std::set<uint64_t> nbWeights;
@@ -416,7 +413,7 @@ uint64_t WBO::findNextWeightDiversity(uint64_t weight) {
   |      constraint.
   |
   |________________________________________________________________________________________________@*/
-void WBO::encodeEO(vec<Lit> &lits) {
+void UpWBO::encodeEO(vec<Lit> &lits) {
 
   assert(lits.size() != 0);
 
@@ -510,7 +507,7 @@ void WBO::encodeEO(vec<Lit> &lits) {
   |    * 'sumSizeCores' is updated.
   |
   |________________________________________________________________________________________________@*/
-void WBO::relaxCore(const vec<Lit> &conflict, uint64_t weightCore,
+void UpWBO::relaxCore(const vec<Lit> &conflict, uint64_t weightCore,
                     vec<Lit> &assumps) {
 
   assert(conflict.size() > 0);
@@ -578,7 +575,7 @@ void WBO::relaxCore(const vec<Lit> &conflict, uint64_t weightCore,
   |      * Assumes that 'conflict' is not empty.
   |
   |________________________________________________________________________________________________@*/
-uint64_t WBO::computeCostCore(const vec<Lit> &conflict) {
+uint64_t UpWBO::computeCostCore(const vec<Lit> &conflict) {
 
   assert(conflict.size() != 0);
 
@@ -605,7 +602,7 @@ uint64_t WBO::computeCostCore(const vec<Lit> &conflict) {
 
 // Initializes the mapping from soft clauses with the index of the cores where
 // they appear
-void WBO::initSymmetry() {
+void UpWBO::initSymmetry() {
 
   for (int i = 0; i < maxsat_formula->nSoft(); i++) {
     softMapping.push();
@@ -633,7 +630,7 @@ void WBO::initSymmetry() {
   |    * Soft clause with index 'p' is added to 'indexSoftCore'.
   |
   |________________________________________________________________________________________________@*/
-void WBO::symmetryLog(int p) {
+void UpWBO::symmetryLog(int p) {
 
   if (nbSymmetryClauses < symmetryBreakingLimit) {
 
@@ -687,7 +684,7 @@ void WBO::symmetryLog(int p) {
   |    * 'nbSymmetryClauses' is updated.
   |
   |________________________________________________________________________________________________@*/
-void WBO::symmetryBreaking() {
+void UpWBO::symmetryBreaking() {
 
   if (indexSoftCore.size() != 0 && nbSymmetryClauses < symmetryBreakingLimit) {
     vec<Lit> *coreIntersection =
@@ -803,7 +800,7 @@ void WBO::symmetryBreaking() {
   |     by 1. Otherwise, 'nbCores' is increased by 1.
   |
   |________________________________________________________________________________________________@*/
-StatusCode WBO::unsatSearch() {
+StatusCode UpWBO::unsatSearch() {
 
   assert(assumptions.size() == 0);
 
@@ -853,20 +850,28 @@ StatusCode WBO::unsatSearch() {
   |    * 'nbSatisfiable' is updated.
   |    * 'nbCores' is updated.
   |________________________________________________________________________________________________@*/
-StatusCode WBO::weightSearch() {
+StatusCode UpWBO::weightSearch() {
 
-  
   assert(weightStrategy == _WEIGHT_NORMAL_ ||
          weightStrategy == _WEIGHT_DIVERSIFY_);
 
   unsatSearch();
 
   initAssumptions(assumptions);
-  updateCurrentWeight(weightStrategy);
+  //updateCurrentWeight(weightStrategy);
+  maxsat_formula->setMaximumWeight(1);
   solver = rebuildWeightSolver(weightStrategy);
+
+  _current_partition = 0;
+  initAssumptionsPartition(assumptions);
+  printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());  
 
   for (;;) {
 
+    if (_limit != -1 && _current_partition+1 != _partitions)
+      solver->setConfBudget(_limit);
+    else
+      solver->budgetOff();
     lbool res = searchSATSolver(solver, assumptions);
 
     if (res == l_False) {
@@ -880,43 +885,39 @@ StatusCode WBO::weightSearch() {
       relaxCore(solver->conflict, coreCost, assumptions);
       delete solver;
       solver = rebuildWeightSolver(weightStrategy);
-    }
-
+    } else {
     if (res == l_True) {
       nbSatisfiable++;
-      if (nbCurrentSoft == maxsat_formula->nSoft()) {
-        assert(computeCostModel(solver->model) == lbCost);
-        if (lbCost == ubCost && verbosity > 0)
-          printf("c LB = UB\n");
-        if (lbCost < ubCost) {
-          ubCost = lbCost;
+    
+      uint64_t newCost = computeCostModel(solver->model);
+        if (newCost < ubCost){
           saveModel(solver->model);
-          printBound(lbCost);
-        }
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      } else {
-        updateCurrentWeight(weightStrategy);
-        uint64_t cost = computeCostModel(solver->model);
-        if (cost < ubCost) {
-          ubCost = cost;
-          saveModel(solver->model);
-          printBound(ubCost);
+          printBound(newCost);
+          ubCost = newCost;
         }
 
-        if (lbCost == ubCost) {
-          if (verbosity > 0)
-            printf("c LB = UB\n");
+        if (ubCost == 0){
           printAnswer(_OPTIMUM_);
           return _OPTIMUM_;
         }
+      }
 
+      if (_current_partition == _partitions){
+        printAnswer(_OPTIMUM_);
+        return _OPTIMUM_; 
+      } else {
+
+        printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());
+        initAssumptionsPartition(assumptions);
+
+      }  
+
+      // do we need this rebuild?
         delete solver;
         solver = rebuildWeightSolver(weightStrategy);
       }
     }
   }
-}
 
 /*_________________________________________________________________________________________________
   |
@@ -937,15 +938,23 @@ StatusCode WBO::weightSearch() {
   |    * 'nbCores' is updated.
   |
   |________________________________________________________________________________________________@*/
-StatusCode WBO::normalSearch() {
+StatusCode UpWBO::normalSearch() {
 
   unsatSearch();
 
   initAssumptions(assumptions);
   solver = rebuildSolver();
 
+  _current_partition = 0;
+  initAssumptionsPartition(assumptions);
+  printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());
+
   for (;;) {
 
+    if (_limit != -1 && _current_partition+1 != _partitions)
+      solver->setConfBudget(_limit);
+    else
+      solver->budgetOff();
     lbool res = searchSATSolver(solver, assumptions);
 
     if (res == l_False) {
@@ -957,32 +966,52 @@ StatusCode WBO::normalSearch() {
         printf("c LB : %-12" PRIu64 " CS : %-12d W  : %-12" PRIu64 "\n", lbCost,
                solver->conflict.size(), coreCost);
 
-      if (lbCost == ubCost) {
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       relaxCore(solver->conflict, coreCost, assumptions);
       delete solver;
       solver = rebuildSolver();
-    }
+    } else {
+      
+      _current_partition++;
 
-    if (res == l_True) {
-      nbSatisfiable++;
-      ubCost = computeCostModel(solver->model);
-      assert(lbCost == ubCost);
-      printBound(lbCost);
-      saveModel(solver->model);
-      printAnswer(_OPTIMUM_);
-      return _OPTIMUM_;
+      if (res == l_True){
+        nbSatisfiable++;
+        uint64_t newCost = computeCostModel(solver->model);
+        if (newCost < ubCost){
+          saveModel(solver->model);
+          printBound(newCost);
+          ubCost = newCost;
+        }
+
+        if (ubCost == 0){
+          printAnswer(_OPTIMUM_);
+          return _OPTIMUM_;
+        }
+      }
+
+      if (_current_partition == _partitions){
+        printAnswer(_OPTIMUM_);
+        return _OPTIMUM_; 
+      } else {
+
+        printf("c Partition #%d= %d\n",_current_partition+1,soft_partitions[_current_partition].size());
+        initAssumptionsPartition(assumptions);
+
+      }
+
+
     }
   }
 }
 
 // Public search method
-StatusCode WBO::search() {
+StatusCode UpWBO::search() {
   //  nbInitialVariables = maxsat_formula->nVars();
 
   // If the maximum weight of the soft clauses is 1 then the problem is
@@ -991,6 +1020,7 @@ StatusCode WBO::search() {
   //   problemType = _UNWEIGHTED_;
   //   weightStrategy = _WEIGHT_NONE_;
   // }
+
   printConfiguration();
 
   if (maxsat_formula->getMaximumWeight() == 1)
@@ -998,6 +1028,11 @@ StatusCode WBO::search() {
 
   if (symmetryStrategy)
     initSymmetry();
+
+  createPartitions();
+  _activeSoftPartition.growTo(maxsat_formula->nSoft(), false);
+  _partitions = soft_partitions.size();
+  printf("c #Soft Partitions = %d\n",_partitions);
 
   if (maxsat_formula->getProblemType() == _UNWEIGHTED_ ||
       weightStrategy == _WEIGHT_NONE_)
@@ -1034,11 +1069,53 @@ StatusCode WBO::search() {
   |    * 'assumps' is updates with the assumptions literals.
   |
   |________________________________________________________________________________________________@*/
-void WBO::initAssumptions(vec<Lit> &assumps) {
+void UpWBO::initAssumptions(vec<Lit> &assumps) {
   for (int i = 0; i < maxsat_formula->nSoft(); i++) {
     Lit l = maxsat_formula->newLiteral();
     maxsat_formula->getSoftClause(i).assumption_var = l;
     coreMapping[l] = i;
-    assumps.push(~l);
+    //assumps.push(~l);
   }
+}
+
+void UpWBO::initAssumptionsPartition(vec<Lit> &assumps){
+    for (int i = 0; i < soft_partitions[_current_partition].size(); i++){
+      assumptions.push(~maxsat_formula->getSoftClause(soft_partitions[_current_partition][i]).assumption_var);
+    }
+}
+
+void UpWBO::createPartitions() {
+  _partitions = 0;
+
+  for (int i = 0; i < maxsat_formula->nPartitions()+1; i++){
+    soft_partitions_tmp.push();
+    new (&soft_partitions_tmp[i]) vec<int>();
+  }
+
+  for (int i = 0; i < maxsat_formula->nSoft(); i++){
+    int v = maxsat_formula->getSoftClause(i).getPartition();
+    if (v == -1) v = maxsat_formula->nPartitions();
+    assert (v >= 0 && v < soft_partitions_tmp.size());
+    soft_partitions_tmp[v].push(i);
+  }  
+
+  std::vector< pair <int,int> > vect;
+  for (int i = 0; i < soft_partitions_tmp.size(); i++){
+    vect.push_back( std::make_pair(soft_partitions_tmp[i].size(), i) );
+  }
+
+  std::sort(vect.begin(), vect.end());
+  for (int i = 0; i < vect.size(); i++){
+    if (vect[i].first > 0){
+      soft_partitions.push();
+      new (&soft_partitions[soft_partitions.size()-1]) vec<int>();
+      for (int j = 0; j < soft_partitions_tmp[vect[i].second].size(); j++){
+        int v = soft_partitions_tmp[vect[i].second][j];
+        soft_partitions[soft_partitions.size()-1].push(v);
+      }
+      soft_partitions_tmp[vect[i].second].clear();
+    } else soft_partitions_tmp[vect[i].second].clear();
+  }
+  soft_partitions_tmp.clear();
+
 }

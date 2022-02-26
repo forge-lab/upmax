@@ -96,7 +96,17 @@ static void parsePwcnf(B &in, MaxSATFormula *maxsat_formula) {
       }
     }
   }
-  maxsat_formula->setPartitions(ids.size());
+  std::set<int>::iterator itr;
+
+  int max = 0;
+  for (itr = ids.begin(); 
+       itr != ids.end(); itr++) 
+  {
+    //cout << *itr << " ";
+    if (*itr > max) max = *itr;
+  }
+  //maxsat_formula->setPartitions(ids.size());
+  maxsat_formula->setPartitions(max);
 }
 
 // Inserts problem into solver.
