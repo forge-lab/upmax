@@ -1,9 +1,10 @@
 #!/usr/bin/python    
 
 import sys
+from pysat.card import *
 
 if len(sys.argv) < 6:
-	print("Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=wcnf,1=pwcnf>")
+	print("Usage: python seat.py <#tables> <min #persons per table> <max #persons per table> <generator file> <0=tables,1=tags>")
 	exit()
 
 # input: tables, min, max, csv, pwcnf (0, 1)
@@ -50,58 +51,34 @@ def parse_csv():
 				tags.add(int(y[i].strip()))
 
 	TablePerson = [[0 for x in range(tbls)] for y in range(len(persons))]
-	TableTag = [[0 for x in range(tbls)] for y in range(len(tags))]
+	# print(len(persons))
+	# print(TablePerson)
+	TableTag = [[0 for x in range(tbls)] for y in range(max((tags))+1)]
+	# print(TableTag)
 	soft = len(tags)*tbls
 	hard = soft+1
-	if pwcnf == 0:
-		parts = tbls+1
-	else:
-		parts = len(tags)+1
 
-def sinz(lits, k):
-	global v
-	global formula
-	global clauses, complete_pwcnf
+def add_atLeastK_constraint(lits, k):
+        global formula, clauses, v, complete_pwcnf
+        cnf = CardEnc.atleast(lits, bound=k, top_id=v)
+        v = cnf.nv
+        for cl in cnf.clauses:
+                clauses += 1
+                if not complete_pwcnf:
+                        print(str(parts)+" "+str(hard)+" "+" ".join([str(c) for c in cl])+" 0")
+                else:
+                        formula = formula+str(parts)+" "+str(hard)+" "+" ".join([str(c) for c in cl])+" 0\n"
 
-	TableSeq = [[0 for x in range(k)] for y in range(len(lits))]
-	for x in range(0,k):
-		for y in range(0,len(lits)):
-			TableSeq[y][x] = v
-			v = v + 1
-
-	if complete_pwcnf :
-		formula = formula + str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0\n"
-		formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0\n"
-	else:
-		print(str(parts)+" "+ str(hard) + " " + str(-lits[0]) + " " + str(TableSeq[0][0]) + " 0")
-		print(str(parts)+" "+str(hard) + " " + str(-lits[len(lits)-1]) + " " + str(-TableSeq[len(lits)-2][k-1]) + " 0")
-	clauses = clauses + 2
-	for x in range(1,k):
-		if complete_pwcnf:
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[0][x]) + " 0\n"
-		else:
-			print(str(parts)+" "+str(hard) + " " + str(-TableSeq[0][x]) + " 0")
-		clauses = clauses + 1
-
-	for i in range(1,len(lits)-1):
-		if complete_pwcnf:
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(TableSeq[i][0]) + " 0\n"
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][0]) + " " + str(TableSeq[i][0]) + " 0\n"
-			formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(-TableSeq[i-1][k-1]) + " 0\n"
-		else:
-			print(str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(TableSeq[i][0]) + " 0")
-			print(str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][0]) + " " + str(TableSeq[i][0]) + " 0")
-			print(str(parts)+" "+str(hard) + " " + str(-lits[i]) + " " + str(-TableSeq[i-1][k-1]) + " 0")
-		clauses = clauses + 3
-		for j in range(1, k):
-			if complete_pwcnf:
-				formula = formula + str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][j]) + " " + str(TableSeq[i][j]) + " 0\n"
-				formula = formula + str(parts)+" "+str(hard) + " " + str(-lits[i]) +  " " + str(-TableSeq[i-1][j-1]) + " " + str(TableSeq[i][j]) + " 0\n"
-			else:
-				print(str(parts)+" "+str(hard) + " " + str(-TableSeq[i-1][j]) + " " + str(TableSeq[i][j]) + " 0")
-				print(str(parts)+" "+str(hard) + " " + str(-lits[i]) +  " " + str(-TableSeq[i-1][j-1]) + " " + str(TableSeq[i][j]) + " 0")
-			clauses = clauses + 2
-
+def add_atMostK_constraint(lits, k):
+        global formula, clauses, v, complete_pwcnf
+        cnf = CardEnc.atmost(lits, bound=k, top_id=v)
+        v = cnf.nv
+        for cl in cnf.clauses:
+                clauses += 1
+                if not complete_pwcnf:
+                        print(str(parts)+" "+str(hard)+" "+" ".join([str(c) for c in cl])+" 0")
+                else:
+                        formula = formula+str(parts)+" "+str(hard)+" "+" ".join([str(c) for c in cl])+" 0\n"
 
 def encoding():
 	# create variables
@@ -115,13 +92,13 @@ def encoding():
 			v = v + 1
 	
 	for x in range(0,tbls):
-		for y in range(0,len(tags)):
+		for y in range(0,max(tags)+1):
 			TableTag[y][x] = v
 			v = v + 1
 
 	# Header
 	if not complete_pwcnf:
-		print("p pwcnf XX "+ str(hard) + " " + str(parts)) 
+		print("p pwcnf XX "+ str(hard) + " {p}".format(p=tbls+1 if pwcnf == 0 else max(tags)+2)) 
 	# If a person is seated in a table then that tag is true
 	for p in persons.keys():
 		for tag in persons[p]:
@@ -139,11 +116,12 @@ def encoding():
 		for p in range(len(persons)):
 			lits_pos.append(TablePerson[p][table])
 			lits_neg.append(-TablePerson[p][table])
-		# print(lits_pos)
-		# print(max_tbls)
-		sinz(lits_pos, max_tbls)
-		sinz(lits_neg, len(lits_neg)-min_tbls)
 
+		add_atMostK_constraint(lits_pos, max_tbls)
+		# sinz(lits_pos, max_tbls)
+		add_atLeastK_constraint(lits_pos, min_tbls)
+		# sinz(lits_neg, len(lits_neg)-min_tbls)
+		
 	# Each person is seated in at least one table
 	for p in persons.keys():
 		#for tag in persons[p]:
@@ -151,7 +129,8 @@ def encoding():
 		for table in range(0,tbls):
 			lits.append(TablePerson[p][table])
 		# Each person is seated in at most one table
-		sinz(lits, 1)
+		# sinz(lits, 1)
+		add_atMostK_constraint(lits, 1)
 
 		clause = str(parts)+" "+str(hard) 
 		for x in lits:
@@ -166,18 +145,18 @@ def encoding():
 
 	# Soft clauses
 	for x in range(0,tbls):
-		for y in range(0,len(tags)):
+		for y in range(0,max(tags)+1):
 			if pwcnf == 0:
 				if complete_pwcnf:
-					formula = formula + str(x+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+					formula = formula + str(x+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
 				else:
-					print(str(x+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
+					print(str(x+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
 				clauses = clauses + 1
 			else:
 				if complete_pwcnf:
-					formula = formula + str(y+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
+					formula = formula + str(y+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
 				else:
-					print(str(y+1)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
+					print(str(y+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
 				clauses = clauses + 1
 
 def main():
@@ -188,10 +167,10 @@ def main():
 	# print(max_tbls)
 	
 	encoding()
-	#print(TablePerson)
-	# print(TableTag)
+	# print("TablePerson", TablePerson)
+	# print("TableTag", TableTag)
 	if complete_pwcnf:
-		print("p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " " + str(parts))
+		print("p pwcnf " + str(v) + " " + str(clauses) + " " + str(hard) + " {p}".format(p=tbls+1 if pwcnf == 0 else max(tags)+2))
 		print(formula, end="")
 	else:
 		print(str(v))
