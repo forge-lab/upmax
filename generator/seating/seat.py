@@ -53,7 +53,7 @@ def parse_csv():
 	TablePerson = [[0 for x in range(tbls)] for y in range(len(persons))]
 	# print(len(persons))
 	# print(TablePerson)
-	TableTag = [[0 for x in range(tbls)] for y in range(max((tags))+1)]
+	TableTag = [[0 for x in range(tbls)] for y in range(max(tags)+1)]
 	# print(TableTag)
 	soft = len(tags)*tbls
 	hard = soft+1
@@ -107,7 +107,7 @@ def encoding():
 					formula = formula + str(parts)+" "+str(hard) + " " + str(-TablePerson[p][table]) + " " + str(TableTag[tag][table]) + " 0\n"
 				else:
 					print(str(parts)+" "+str(hard) + " " + str(-TablePerson[p][table]) + " " + str(TableTag[tag][table]) + " 0")
-				clauses = clauses + 1
+				clauses += 1
 
 	# Each table has at most k persons
 	for table in range(0,tbls):
@@ -140,24 +140,23 @@ def encoding():
 			formula = formula + clause
 		else:
 			print(clause[:-1])
-		clauses + clauses + 1
+		clauses += 1
 
 
 	# Soft clauses
 	for x in range(0,tbls):
 		for y in range(0,max(tags)+1):
+			clauses += 1
 			if pwcnf == 0:
 				if complete_pwcnf:
 					formula = formula + str(x+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
 				else:
 					print(str(x+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
-				clauses = clauses + 1
 			else:
 				if complete_pwcnf:
 					formula = formula + str(y+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0\n"
 				else:
 					print(str(y+2)+" "+str(1) + " " + str(-TableTag[y][x]) + " 0")
-				clauses = clauses + 1
 
 def main():
 	global complete_pwcnf
