@@ -51,7 +51,7 @@ do
        g=$((g-1))
        continue
    fi  
-   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 0 > $data_dir/pwcnfs-tags-based/$pwcnf_name.out
+   python3 seat.py $num_tables $min_per_table $max_per_table $data_dir/instances/$i_name.sa 1 > $data_dir/pwcnfs-tags-based/$pwcnf_name.out
    build_pwcnf $data_dir/pwcnfs-tags-based/$pwcnf_name
    cp /tmp/$pwcnf_name.out $data_dir/outputs/.
 done
