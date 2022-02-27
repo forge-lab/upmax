@@ -29,7 +29,7 @@ TableTag = []
 v = 1
 soft = 1
 hard = 1
-clauses = 1
+clauses = 0
 variables = 1
 
 formula = ""
