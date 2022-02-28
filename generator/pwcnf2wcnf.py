@@ -17,7 +17,7 @@ def pwcnf2wcnf(pwcnf_file, wcnf_file):
     with gzip.open(pwcnf_file, 'rb') as f:
         pwcnf = str(f.read()).split('\\n')
         with open(wcnf_file, 'w') as wcnf:
-            header = " ".join(pwcnf[0].split(" ")[:-1])[2:]+"\n"
+            header = " ".join(pwcnf[0].split(" ")[:-1])[2:].replace("pwcnf","wcnf")+"\n"
             wcnf.write(header)
             for l in pwcnf[1:-1]:
                 wcnf.write(" ".join(l.split(" ")[1:])+"\n")
