@@ -11,9 +11,10 @@
 pwcnf2wcnf(){
   for f in $(find $pwcnfs_dir/*.pwcnf.gz -type f);
   do
+      echo "Dealing with "$f
       out_name=$data_dir/"$(basename $f .pwcnf.gz)"
-      python3 pwcnf2wcnf.py -i $f $out_name
-      gzip out_name
+      python3 pwcnf2wcnf.py -i $f -o $out_name.wcnf
+      gzip -f $out_name.wcnf
   done
 }
 
