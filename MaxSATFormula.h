@@ -1,9 +1,10 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2015, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +46,7 @@ using NSPACE::Lit;
 using NSPACE::lit_Undef;
 using NSPACE::mkLit;
 
-namespace openwbo {
+namespace upmax {
 
 typedef std::map<std::string, int> nameMap;
 typedef std::map<int, std::string> indexMap;
@@ -239,6 +240,6 @@ protected:
   int format;
 };
 
-} // namespace openwbo
+} // namespace upmax
 
 #endif

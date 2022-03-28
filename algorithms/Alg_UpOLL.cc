@@ -28,7 +28,7 @@
 
 #include "Alg_UpOLL.h"
 
-using namespace openwbo;
+using namespace upmax;
 
 StatusCode UpOLL::unweighted() {
 

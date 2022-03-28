@@ -3,7 +3,8 @@
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2015, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +55,7 @@ using std::endl;
 /*! Definition of possible constraint signs. */
 enum pb_Sign { _PB_GREATER_OR_EQUAL_ = 0x1, _PB_LESS_OR_EQUAL_, _PB_EQUAL_ };
 
-namespace openwbo {
+namespace upmax {
 
 /*! Generic parser class in open-wbo. All other parsers inherit from this class.
  */
@@ -158,7 +159,7 @@ protected:
   MaxSATFormula *maxsat_formula;
 };
 
-} // namespace openwbo
+} // namespace upmax
 
 #endif // __PB_PARSER__
 

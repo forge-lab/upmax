@@ -36,7 +36,7 @@
 #include <map>
 #include <set>
 
-namespace openwbo {
+namespace upmax {
 
 //=================================================================================================
 class UpOLL : public MaxSAT_Partition {
@@ -126,6 +126,6 @@ protected:
   vec< vec<int> > soft_partitions_tmp;
     vec<bool> activeSoftPartition;
 };
-} // namespace openwbo
+} // namespace upmax
 
 #endif

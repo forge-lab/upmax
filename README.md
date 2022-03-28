@@ -1,20 +1,7 @@
-WCNF formula without user provided partitions (default):
-```-formula = 0```
+# UpMax : User partitioning for MaxSAT
 
-WCNF formula with user provided partitions (only used by the user-based algorithm; the other algorithms will ignore the user partition):
-```-formula = 2```
+We propose a new format called ``pwcnf`` for defining MaxSAT formulas that extends the current ``wcnf`` format, allowing the user to propose how to partition MaxSAT formulas based on his domain-knowledge of the problem to be solved. Moreover, until now, the partitioning of MaxSAT formulas is interconnected to the subsequent algorithm to be used. Therefore, it is not easy to define and test new partitioning methods with several MaxSAT algorithms developed by different people. This new format allows to decouple these components, hopefully facilitating the appearance of new partition methods for MaxSAT formulas. 
 
-Running the user-based partition algorithm:
-```./open-wbo -formula=2 -algorithm=4 <formula>```
+![Overview of UpMax](https://raw.githubusercontent.com/forge-lab/upmax/master/assets/images/UpMax-overview.pdf)
 
-Running the auto-generated partition algorithm:
-```./open-wbo -formula=0 -algorithm=3 <formula>```
-
-Running the baseline algorithm without partitions:
-```./open-wbo -formula=0 -algorithm=2 <formula>```
-
-Find all optimal solutions that falsify a different set of soft clauses:
-```-all-opt```
-
-Find all optimal solutions taking into consideration all variables of the formula:
-```-all-opt -all-vars```
+The above figure illustrates the schematic view of the UpMax architecture based on decoupling of the MaxSAT solving algorithm from the split of the clauses on the MaxSAT formula.

@@ -1,11 +1,12 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
  * MiniSat,  Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
  *           Copyright (c) 2007-2010, Niklas Sorensson
- * Open-WBO, Copyright (c) 2013-2015, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +44,7 @@
 using NSPACE::mkLit;
 using NSPACE::StreamBuffer;
 
-namespace openwbo {
+namespace upmax {
 
 //=================================================================================================
 // DIMACS Parser:
@@ -138,6 +139,6 @@ static void parseMaxSATFormula(gzFile input_stream,
 }
 
 //=================================================================================================
-} // namespace openwbo
+} // namespace upmax
 
 #endif

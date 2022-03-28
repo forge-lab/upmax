@@ -1,9 +1,10 @@
 /*!
- * \author Ruben Martins - ruben@sat.inesc-id.pt
+ * \author Ruben Martins - rubenm@andrew.cmu.edu
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +39,7 @@
 #include <set>
 #include <utility>
 
-namespace openwbo {
+namespace upmax {
 
 class UpWBO : public MaxSAT_Partition {
 
@@ -165,6 +166,6 @@ protected:
   int _limit;
 
 };
-} // namespace openwbo
+} // namespace upmax
 
 #endif

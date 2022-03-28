@@ -3,7 +3,8 @@
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2021, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +32,7 @@
 #include <sstream>
 #include <iostream>
 
-using namespace openwbo;
+using namespace upmax;
 
 /************************************************************************************************
  //

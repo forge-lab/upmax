@@ -3,7 +3,8 @@
  *
  * @section LICENSE
  *
- * Open-WBO, Copyright (c) 2013-2017, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * Open-WBO, Copyright (c) 2013-2022, Ruben Martins, Vasco Manquinho, Ines Lynce
+ * UpMax,    Copyright (c) 2022, Pedro Orvalho, Vasco Manquinho, Ruben Martins
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +36,7 @@
 
 using namespace std;
 
-namespace openwbo {
+namespace upmax {
 
 enum splitMode_ { RAND_MODE, UNFOLDING_MODE, LABEL_PROP_MODE, PWCNF_MODE};
 
@@ -97,6 +98,6 @@ protected:
   // Label propagation method
 };
 
-} // namespace openwbo
+} // namespace upmax
 
 #endif
