@@ -11,7 +11,7 @@ SOLVER     ?= glucose4.1
 include $(PWD)/solvers/$(SOLVER).mk
 
 # THE REMAINING OF THE MAKEFILE SHOULD BE LEFT UNCHANGED
-EXEC       = open-wbo
+EXEC       = upmax
 DEPDIR     += mtl utils core
 DEPDIR     +=  ../../encodings ../../algorithms ../../graph ../../classifier
 MROOT      ?= $(PWD)/solvers/$(SOLVERDIR)
