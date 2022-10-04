@@ -17,7 +17,7 @@ from pysat.examples.rc2 import RC2
 
 class UpRC2(object):
     """
-       RC2 Solver for PWCNFs taking advantage of user-defined partitions.
+       RC2 Solver Solver for PWCNFs based on user partitioning of the soft clauses.
        Calls RC2 #n_partitions times, adding each set of user-defined partitions incrementally.
     """
     def __init__(self, pwcnf):
@@ -40,7 +40,7 @@ class UpRC2(object):
                 c, w = p_clauses[i], wghts[i]
                 self.solver.add_clause(c, weight=w)
             m = self.solver.compute()
-        return m, , self.solve.cost
+        return m, self.solver.cost
 
     def compute_without_partitions(self):
         """
@@ -54,7 +54,7 @@ class UpRC2(object):
             for i in range(len(p_clauses)):
                 c, w = p_clauses[i], wghts[i]
                 self.solver.add_clause(c, weight=w)
-        return self.solver.compute(), self.solve.cost
+        return self.solver.compute(), self.solver.cost
     
 def parser():
     parser = argparse.ArgumentParser(prog='upRC2.py', formatter_class=argparse.RawTextHelpFormatter)
@@ -73,6 +73,9 @@ if __name__ == '__main__':
     else:
         m, c = upRC2.compute_without_partitions()
     if m:
-        print("SAT")
+        print('s OPTIMUM FOUND')
+        print('o', str(c))
+        print()
+        print(m)
     else:
         print("UNSAT")
