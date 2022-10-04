@@ -12,11 +12,8 @@
 import argparse
 from sys import argv
 from pwcnf import PWCNF
-from pysat.formula import WCNF
 from pysat.examples.hitman import Hitman
 from pysat.solvers import Solver
-from pysat.examples.mcsls import MCSls
-from pysat.examples.rc2 import RC2
 
 class UpHitman(object):
     """
@@ -29,7 +26,7 @@ class UpHitman(object):
             Constructor.
         """
         self.pwcnf = pwcnf
-        self.hitman = Hitman(htype="maxsat") # the default is to use MCSls
+        self.hitman = Hitman(htype="maxsat") # the default is to use MCSls, but we are using RC2
         self.solver = Solver(bootstrap_with=self.pwcnf.hard)
         self.nv = self.pwcnf.nv
 
