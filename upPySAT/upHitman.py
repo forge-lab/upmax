@@ -21,15 +21,25 @@ class UpHitman(object):
        Calls Hitman #n_partitions times, adding each set of user-defined partitions incrementally.
        Hitman (PySAT) is a cardinality-/subset-minimal hitting set enumerator.
     """
-    def __init__(self, pwcnf):
+    def __init__(self, pwcnf, no_up=False):
         """
             Constructor.
         """
         self.pwcnf = pwcnf
         self.hitman = Hitman(htype="maxsat") # the default is to use MCSls, but we are using RC2
-        self.solver = Solver(bootstrap_with=self.pwcnf.hard)
-        self.nv = self.pwcnf.nv
+        self.solver = Solver(bootstrap_with=self.pwcnf.get_hard())
+        self.nv = self.pwcnf.get_num_variables()
+        self.no_up = no_up
 
+    def compute(self):
+        """
+           Computes either using user-based partitions or not
+        """        
+        if not self.no_up:
+            return upHitman.compute_with_partitions()
+        else:
+            return upHitman.compute_without_partitions()
+  
     def get_cost(self, m, rel_vars, ws):
         """
             Computes the total cost of the unsatisfied soft clauses based on the relaxation variables.
@@ -50,8 +60,8 @@ class UpHitman(object):
         sels = []
         ws = dict()
         hs = None
-        for j in range(len(self.pwcnf.parts)):
-            p_clauses, wghts = self.pwcnf.parts[j], self.pwcnf.parts_wghts[j]
+        for j in range(len(self.pwcnf.get_partitions())):
+            p_clauses, wghts = self.pwcnf.get_partition(j), self.pwcnf.get_partition_weights(j)
             for i in range(len(p_clauses)):
                 c, w = p_clauses[i], wghts[i]
                 self.nv += 1
@@ -79,8 +89,8 @@ class UpHitman(object):
         sels = []
         ws = dict()
         hs = None
-        for i in range(len(self.pwcnf.soft)):
-            c, w = self.pwcnf.soft[i], self.pwcnf.wght[i]
+        for i in range(len(self.pwcnf.get_soft())):
+            c, w = self.pwcnf.get_soft_clause(i), self.pwcnf.get_soft_weight(i)
             self.nv += 1
             self.solver.add_clause(c + [-1*self.nv])
             sels += [self.nv]
@@ -110,7 +120,7 @@ def parser():
 if __name__ == '__main__':
     args = parser()
     pwcnf = PWCNF(from_file=args.pwcnf)
-    upHitman = UpHitman(pwcnf)
+    upHitman = UpHitman(pwcnf, no_up=args.no_up)
     if not args.no_up:
         m, c =upHitman.compute_with_partitions()
     else:
