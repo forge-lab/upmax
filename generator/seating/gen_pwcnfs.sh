@@ -60,9 +60,9 @@ done
 # calculations from 18-23 to 38-43 since we increment +1 20 times
 persons_min=18
 persons_max=23
-for((i=1; i<=$n_instances; i=i+50))
+for((i=1; i<=$n_instances; i=i+51))
 do
-    echo "Generating instances from "$i" to "$((i+50))
+    echo "Generating instances from "$i" to "$((i+51))
     gen_instances $i $((i+50)) $persons_min $persons_max &
     persons_min=$((persons_min+1))
     persons_max=$((persons_max+1))
