@@ -48,7 +48,9 @@ class PWCNF(object):
         elif from_string:
             self.from_string(from_string, comment_lead)
 
-
+        sorted(self.parts, key=len)
+        sorted(self.parts_wghts, key=len)
+        
     def from_file(self, fname, comment_lead=['c'], compressed_with='use_ext'):
         """
             Read a PWCNF formula from a file in the DIMACS format. A file name
