@@ -20,22 +20,32 @@ class UpRC2(object):
        RC2 Solver Solver for PWCNFs based on user partitioning of the soft clauses.
        Calls RC2 #n_partitions times, adding each set of user-defined partitions incrementally.
     """
-    def __init__(self, pwcnf):
+    def __init__(self, pwcnf, no_up=False):
         """
             Constructor.
         """
         self.pwcnf = pwcnf
         self.solver = RC2(WCNF())
-
+        self.no_up = no_up
+        
+    def compute(self):
+        """
+           Computes either using user-based partitions or not
+        """
+        if not self.no_up:
+            return upRC2.compute_with_partitions()
+        else:
+            return upRC2.compute_without_partitions()
+        
     def compute_with_partitions(self):
         """
             Calls RC2 #n_partitions times, adding each set of user-defined partitions incrementally.
         """ 
-        for h in self.pwcnf.hard:
+        for h in self.pwcnf.get_hard():
             self.solver.add_clause(h)
         m = None
-        for j in range(len(self.pwcnf.parts)):
-            p_clauses, wghts = self.pwcnf.parts[j], self.pwcnf.parts_wghts[j]
+        for j in range(len(self.pwcnf.get_partitions())):
+            p_clauses, wghts = self.pwcnf.get_partition(j), self.pwcnf.get_partition_weights(j)
             for i in range(len(p_clauses)):
                 c, w = p_clauses[i], wghts[i]
                 self.solver.add_clause(c, weight=w)
@@ -46,11 +56,11 @@ class UpRC2(object):
         """
             Calls RC2 ignoring the user-defined partitions i.e. adds all the hard and soft clauses at once.
         """ 
-        for h in self.pwcnf.hard:
+        for h in self.pwcnf.get_hard():
             self.solver.add_clause(h)
         m = None
-        for j in range(len(self.pwcnf.parts)):
-            p_clauses, wghts = self.pwcnf.parts[j], self.pwcnf.parts_wghts[j]
+        for j in range(len(self.pwcnf.get_partitions())):
+            p_clauses, wghts = self.pwcnf.get_partition(j), self.pwcnf.get_partition_weights(j)
             for i in range(len(p_clauses)):
                 c, w = p_clauses[i], wghts[i]
                 self.solver.add_clause(c, weight=w)
@@ -67,11 +77,8 @@ def parser():
 if __name__ == '__main__':
     args = parser()
     pwcnf = PWCNF(from_file=args.pwcnf)
-    upRC2 = UpRC2(pwcnf)
-    if not args.no_up:
-        m, c =upRC2.compute_with_partitions()
-    else:
-        m, c = upRC2.compute_without_partitions()
+    upRC2 = UpRC2(pwcnf, no_up=args.no_up)
+    m, c =upRC2.compute()
     if m:
         print('s OPTIMUM FOUND')
         print('o', str(c))

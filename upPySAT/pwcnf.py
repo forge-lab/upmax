@@ -48,7 +48,58 @@ class PWCNF(object):
         elif from_string:
             self.from_string(from_string, comment_lead)
 
+        sorted(self.parts, key=len)
+        sorted(self.parts_wghts, key=len)
 
+    def get_num_variables(self):
+        """
+           Number of variables
+        """
+        return self.nv
+
+    def get_hard(self):
+        """
+           Hard Clauses
+        """
+        return self.hard
+
+    def get_soft(self):
+        """
+           Soft Clauses
+        """
+        return self.soft
+
+    def get_soft_clause(self, c):
+        """
+           Soft clause c
+        """
+        return self.soft[c]
+
+    def get_soft_weight(self, s):
+        """
+           Soft clause c's weight
+        """
+        return self.wght[s]
+
+    def get_partitions(self):
+        """
+           Partitions
+        """
+        return self.parts
+
+    def get_partition(self, p):
+        """
+           Partition P
+        """
+        return self.parts[p]
+
+    def get_partition_weights(self, p):
+        """
+           Partition P's Weights
+        """
+        return self.parts_wghts[p]
+
+    
     def from_file(self, fname, comment_lead=['c'], compressed_with='use_ext'):
         """
             Read a PWCNF formula from a file in the DIMACS format. A file name
