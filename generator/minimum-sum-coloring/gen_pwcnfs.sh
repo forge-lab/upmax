@@ -16,7 +16,7 @@ p_min=0.02
 p_max=0.10
 
 #data_dir=$(pwd)
-data_dir="/data/tmp/pwcnfs/minimum-sum-coloring"
+data_dir="/data/tmp/tacas23/minimum-sum-coloring"
 mkdir -p $data_dir $data_dir/outputs $data_dir/graphs $data_dir/pwcnfs-color-based $data_dir/pwcnfs-vertex-based
 
 gen_instances(){
@@ -49,10 +49,10 @@ done
 
 n_min=5  # initial value : 5 and final 85 
 n_max=10 # initial value : 10 and final 90 
-for((i=1; i<=$n_instances; i=i+51))
+for((i=1; i<=$n_instances; i=i+50))
 do
-    echo "Generating instances from "$i" to "$((i+51))	
-    gen_instances $i $((i+50)) $n_min $n_max &
+    echo "Generating instances from "$i" to "$((i+49))	
+    gen_instances $i $((i+49)) $n_min $n_max &
     n_min=$((n_min+4))
     n_max=$((n_max+4))
 done

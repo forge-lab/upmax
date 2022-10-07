@@ -12,7 +12,7 @@ n_instances=1000
 tags_min=6
 tags_max=10    
 #data_dir=$(pwd)
-data_dir="/data/tmp/pwcnfs/seating-assignment-smaller"
+data_dir="/data/tmp/tacas23/seating-assignment"
 mkdir -p $data_dir $data_dir/outputs $data_dir/instances $data_dir/pwcnfs-tables-based $data_dir/pwcnfs-tags-based
 
 build_pwcnf(){
@@ -58,12 +58,12 @@ done
 }
 
 # calculations from 18-23 to 38-43 since we increment +1 20 times
-persons_min=18
-persons_max=23
-for((i=1; i<=$n_instances; i=i+51))
+pp_min=18
+pp_max=23
+for((i=1; i<=$n_instances; i=i+50))
 do
-    echo "Generating instances from "$i" to "$((i+51))
-    gen_instances $i $((i+50)) $persons_min $persons_max &
-    persons_min=$((persons_min+1))
-    persons_max=$((persons_max+1))
+    echo "Generating instances from "$i" to "$((i+49))
+    gen_instances $i $((i+49)) $pp_min $pp_max &
+    pp_min=$((pp_min+1))
+    pp_max=$((pp_max+1))
 done     
