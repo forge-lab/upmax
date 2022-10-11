@@ -28,28 +28,49 @@ class PWCNF(object):
         :type comment_lead: list(str)
     """
     def __init__(self, from_file=None, from_fp=None, from_string=None,
-            comment_lead=['c']):
+                 comment_lead=['c'], wcnf=False):
         """
             Constructor.
         """
-        self.nv = 0
-        self.hard = []
-        self.soft = []
-        self.wght = []
-        self.topw = 1
-        self.comments = []
-        self.parts = []
-        self.parts_wghts = []
 
-        if from_file:
-            self.from_file(from_file, comment_lead, compressed_with='use_ext')
-        elif from_fp:
-            self.from_fp(from_fp, comment_lead)
-        elif from_string:
-            self.from_string(from_string, comment_lead)
+        self.wcnf = None
+        if not wcnf:
+            self.nv = 0 
+            self.hard = []
+            self.soft = []
+            self.wght = []
+            self.topw = 1
+            self.comments = []
+            self.parts = []
+            self.parts_wghts = []
 
-        sorted(self.parts, key=len)
-        sorted(self.parts_wghts, key=len)
+            if from_file:
+                self.from_file(from_file, comment_lead, compressed_with='use_ext')
+            elif from_fp:
+                self.from_fp(from_fp, comment_lead)
+            elif from_string:
+                self.from_string(from_string, comment_lead)
+
+            sorted(self.parts, key=len)
+            sorted(self.parts_wghts, key=len)
+            
+        else: # when the user provides a WCNF 
+            if from_file:
+                self.wcnf = WCNF(from_file=from_file, comment_lead=comment_lead)
+            elif from_fp:
+                self.wcnf = WCNF(from_fp=from_fp, comment_lead=comment_lead)
+            elif from_string:
+                self.wcnf = WCNF(from_string=from_string, comment_lead=comment_lead)
+            
+            self.nv = self.wcnf.nv
+            self.hard = self.wcnf.hard
+            self.soft = self.wcnf.soft
+            self.wght = self.wcnf.wght
+            self.topw = self.wcnf.topw
+            self.comments = self.wcnf.comments
+            self.parts = []
+            self.parts_wghts = []
+
 
     def get_num_variables(self):
         """
