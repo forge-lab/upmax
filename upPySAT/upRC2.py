@@ -58,25 +58,29 @@ class UpRC2(object):
         """ 
         for h in self.pwcnf.get_hard():
             self.solver.add_clause(h)
-        m = None
-        for j in range(len(self.pwcnf.get_partitions())):
-            p_clauses, wghts = self.pwcnf.get_partition(j), self.pwcnf.get_partition_weights(j)
-            for i in range(len(p_clauses)):
-                c, w = p_clauses[i], wghts[i]
-                self.solver.add_clause(c, weight=w)
+        for i in range(len(self.pwcnf.get_soft())):
+            c, w = self.pwcnf.get_soft_clause(i), self.pwcnf.get_soft_weight(i)
+            self.solver.add_clause(c, weight=w)
         return self.solver.compute(), self.solver.cost
+
+    
     
 def parser():
     parser = argparse.ArgumentParser(prog='upRC2.py', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--pwcnf', help='PWCNF formula.')
-    parser.add_argument('-nup', '--no_up', action='store_true', default=False, help='Calls the MaxSAT solver (RC2) without considering the partitions present in the formula.')
-    parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Prints debugging information.')
+    parser.add_argument('-nup', '--no_up', action='store_true', default=False, help='Calls the MaxSAT solver (RC2) using the PWCNF formula without considering the partitions present in the formula.')
+    parser.add_argument('--wcnf', help='WCNF formula.')
+    parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Prints debugging information.')    
     args = parser.parse_args(argv[1:])
     return args
 
 if __name__ == '__main__':
     args = parser()
-    pwcnf = PWCNF(from_file=args.pwcnf)
+    if args.pwcnf:
+        pwcnf = PWCNF(from_file=args.pwcnf)
+    elif args.wcnf:
+        pwcnf = PWCNF(from_file=args.wcnf, wcnf=True)
+        args.no_up = True
     upRC2 = UpRC2(pwcnf, no_up=args.no_up)
     m, c =upRC2.compute()
     if m:
