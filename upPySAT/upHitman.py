@@ -113,13 +113,18 @@ def parser():
     parser = argparse.ArgumentParser(prog='upHitman.py', formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument('-f', '--pwcnf', help='PWCNF formula.')
     parser.add_argument('-nup', '--no_up', action='store_true', default=False, help='Calls the MaxSAT solver (Hitman) without considering the partitions present in the formula.')
+    parser.add_argument('--wcnf', help='WCNF formula.')
     parser.add_argument('-v', '--verbose', action='store_true', default=False, help='Prints debugging information.')
     args = parser.parse_args(argv[1:])
     return args
 
 if __name__ == '__main__':
     args = parser()
-    pwcnf = PWCNF(from_file=args.pwcnf)
+    if args.pwcnf:
+        pwcnf = PWCNF(from_file=args.pwcnf)
+    elif args.wcnf:
+        pwcnf = PWCNF(from_file=args.wcnf, wcnf=True)
+        args.no_up = True
     upHitman = UpHitman(pwcnf, no_up=args.no_up)
     if not args.no_up:
         m, c =upHitman.compute_with_partitions()
