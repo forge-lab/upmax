@@ -27,7 +27,7 @@ class UpHitman(object):
         """
         self.pwcnf = pwcnf
         self.hitman = Hitman(htype="maxsat") # the default is to use MCSls, but we are using RC2
-        self.solver = Solver(bootstrap_with=self.pwcnf.get_hard())
+        self.solver = Solver(name='g3', bootstrap_with=self.pwcnf.get_hard())
         self.nv = self.pwcnf.get_num_variables()
         self.no_up = no_up
 
