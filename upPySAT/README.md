@@ -5,13 +5,15 @@ UpRC2 is an adaptation of the RC2 Solver for PWCNFs i.e. takes advantage of user
 
 Usage:
 ```
-python3 upRC2.py [-h] -f PWCNF [-nup] [-v]
+python3 upRC2.py [-h] [-f PWCNF | --pwcnf PWCNF] [--wcnf WCNF] [-nup]  [-v]
 ```
 
 optional arguments:
   -h, --help                             : show this help message and exit
   
   -f PWCNF.pwcnf, --pwcnf PWCNF.pwcnf    : PWCNF formula.
+
+  --wcnf WCNF.wcnf                       : WCNF formula.
   
   -nup, --no_up                          : Calls the MaxSAT solver (RC2) without considering the partitions present in the formula.
 
@@ -25,7 +27,7 @@ UpHitman is a MaxHS-like Solver adaptation for PWCNFs based on user partitionig 
 
 Usage: 
 ```
-python3 upHitman.py [-h] -f PWCNF [-nup] [-v]
+python3 upHitman.py [-h] [-f PWCNF | --pwcnf PWCNF] [--wcnf WCNF] [-nup] [-v]
 ```
 
 optional arguments:
@@ -33,6 +35,8 @@ optional arguments:
   -h, --help                               : show this help message and exit
   
   -f PWCNF.pwcnf, --pwcnf PWCNF.pwcnf      : PWCNF formula.
+
+  --wcnf WCNF.wcnf                         : WCNF formula.  
   
   -nup, --no_up                            : Calls the MaxSAT solver (Hitman) without considering the partitions present in the formula.
   
