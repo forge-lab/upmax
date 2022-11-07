@@ -67,3 +67,6 @@ For instance, consider that you want to solver the formula ``filename.pwcnf`` wi
 
 ``./upmax -algorithm=2 -upmax filename.pwcnf``
 
+## UpPySAT
+
+Our README explaining how to run PySAT with user-based partitions can be found [here](https://github.com/forge-lab/upmax/blob/master/upPySAT/README.md).
