@@ -18,12 +18,12 @@ pwcnf2wcnf(){
   done
 }
 
-data_dir="/data/tmp/wcnfs/seating-assignment-smaller"
-pwcnfs_dir="/data/tmp/pwcnfs/seating-assignment-smaller/pwcnfs-tables-based"
+data_dir="/data/tmp/tacas23/seating-assignment/wcnfs"
+pwcnfs_dir="/data/tmp/tacas23/seating-assignment/pwcnfs-tables-based"
 mkdir -p $data_dir
 pwcnf2wcnf
 
-data_dir="/data/tmp/wcnfs/minimum-sum-coloring-p2-10-n5-80/"
-pwcnfs_dir="/data/tmp/pwcnfs/minimum-sum-coloring-p2-10-n5-80/pwcnfs-color-based"
+data_dir="/data/tmp/tacas23/minimum-sum-coloring/wcnfs"
+pwcnfs_dir="/data/tmp/tacas23/minimum-sum-coloring/pwcnfs-color-based"
 mkdir -p $data_dir
 pwcnf2wcnf
