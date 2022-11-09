@@ -10,7 +10,6 @@
 
 results_dir="logs"
 csvs_dir="csvs"
-plots_dir="plots"
 timeout=300
 # timeout=1800
 algs=("MSU3" "WBO" "OLL" "RC2" "Hitman" "MaxHS" "UWrMaxSAT")
@@ -23,9 +22,13 @@ save_results(){
       for ((a=0;a<${#algs[@]};a++));
       do
 	alg=${algs[$a]}
+	if [[ $j -ge 0 && $a -ge 5 ]]; # The MaxHS and UWrMaxSAT algorithms only accept wcnfs (no partitioning scheme)
+	then
+	   continue
+        fi  
 	output_file=$csvs_dir/$family/$alg-$part".csv"
 	rm $output_file
-	echo "Benchmark,"$alg-$part"," > $output_file
+	echo "Benchmark,"$alg-$part > $output_file
 	for f in $(find $results_dir/$family/$part/$alg/*.out -type f);
 	do
 	    i_name="$(basename $f .out)"
@@ -34,7 +37,7 @@ save_results(){
 	    if [[ $y != "" ]] ; then
 		t=$(grep "CPUTIME=" $results_dir/$family/$part/$alg/$i_name.var | cut -d '=' -f 2)
 	    fi
-	    echo $i_name","$t"," >> $output_file
+	    echo $i_name","$t >> $output_file
 	done
 	if [[ `wc -l $output_file | awk '{print $1}'` -le "1" ]];
 	then
@@ -44,10 +47,10 @@ save_results(){
   done	
 }    
 
-parts=("table" "tag" "vig" "cvig" "res" "random" "wcnf")
+parts=("wcnf" "table" "tag" "vig" "cvig" "res" "random")
 family="seating-assignment"
 save_results
 
-parts=("vertex" "color" "vig" "cvig" "res" "random" "wcnf")
+parts=("wcnf" "vertex" "color" "vig" "cvig" "res" "random")
 family="minimum-sum-coloring"
 save_results
