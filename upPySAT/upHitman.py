@@ -60,6 +60,7 @@ class UpHitman(object):
         sels = []
         ws = dict()
         hs = None
+        m = None
         for j in range(len(self.pwcnf.get_partitions())):
             p_clauses, wghts = self.pwcnf.get_partition(j), self.pwcnf.get_partition_weights(j)
             for i in range(len(p_clauses)):
