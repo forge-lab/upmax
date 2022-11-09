@@ -22,15 +22,15 @@ run_solvers_with_UP(){
   # Solvers that accept user-based partitions (using pwcnfs)
   for((j=0;j<${#formulae[@]};j++));
     do
-	f=${formulae[$j]}
-	formulae_dir=$data_dir/$f
-	output_dir=$results_dir/$f
+	part=${formulae[$j]}
+	formulae_dir=$data_dir/$part
+	output_dir=$results_dir/$part
 	mkdir -p $output_dir"/MSU3/" $output_dir"/WBO/" $output_dir"/OLL/" $output_dir"/RC2/" $output_dir"/Hitman/"
 	for f in $(find $formulae_dir/*z -type f);
 	do
 	    echo "Instance: "$f  
-	    i_name="$(basename $f .pwcnf.gz)"
-	    gunzip -c -f $f > maxsat.pwcnf
+	    i_name="$(basename $f .pwcnf.xz)"
+	    xz -cdk $f > maxsat.pwcnf
 	    ## MSU3
 	    output=$output_dir"/MSU3/"$i_name	    
 	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=1 -upmax maxsat.pwcnf
@@ -61,12 +61,11 @@ run_solvers_without_UP(){
    formulae_dir=$data_dir/"wcnf"
    output_dir=$results_dir/"wcnf"
    mkdir -p $output_dir"/MSU3/" $output_dir"/WBO/" $output_dir"/OLL/" $output_dir"/RC2/" $output_dir"/Hitman/" $output_dir"/MaxHS" $output_dir"/UWrMaxSAT"
-   for f in $(find $formulae_dir/*z -type f);
+   for f in $(find $formulae_dir/*xz -type f);
    do
      echo "Instance: "$f  
-     i_name="$(basename $f .wcnf.gz)"
-     gunzip -c -f $f > maxsat.wcnf
-
+     i_name="$(basename $f .wcnf.xz)"
+     xz -cdk $f > maxsat.wcnf
      ## MSU3
      output=$output_dir"/MSU3/"$i_name
      ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=1 maxsat.wcnf
