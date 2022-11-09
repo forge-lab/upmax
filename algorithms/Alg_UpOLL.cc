@@ -92,8 +92,9 @@ StatusCode UpOLL::unweighted() {
 
       if (res == l_True){
         nbSatisfiable++;
+        printf("computing the cost\n");
         uint64_t newCost = computeCostModel(solver->model);
-        if (newCost < ubCost){
+        if (newCost <= ubCost){
           saveModel(solver->model);
           printBound(newCost);
           ubCost = newCost;
@@ -103,6 +104,8 @@ StatusCode UpOLL::unweighted() {
           printAnswer(_OPTIMUM_);
           return _OPTIMUM_;
         }
+      } else {
+        printf("formula is unsat\n");
       }
 
       if (current_partition == _partitions){
@@ -127,13 +130,13 @@ StatusCode UpOLL::unweighted() {
       if (verbosity > 0)
         printf("c LB : %-12" PRIu64 "\n", lbCost);
 
-      if (lbCost == ubCost) {
-        assert(nbSatisfiable > 0);
-        if (verbosity > 0)
-          printf("c LB = UB\n");
-        printAnswer(_OPTIMUM_);
-        return _OPTIMUM_;
-      }
+      // if (lbCost == ubCost) {
+      //   assert(nbSatisfiable > 0);
+      //   if (verbosity > 0)
+      //     printf("c LB = UB\n");
+      //   printAnswer(_OPTIMUM_);
+      //   return _OPTIMUM_;
+      // }
 
       sumSizeCores += solver->conflict.size();
 
@@ -312,7 +315,7 @@ StatusCode UpOLL::weighted() {
       if (res == l_True){
         nbSatisfiable++;
         uint64_t newCost = computeCostModel(solver->model);
-        if (newCost < ubCost) {
+        if (newCost <= ubCost) {
           saveModel(solver->model);
           printBound(newCost);
           ubCost = newCost;

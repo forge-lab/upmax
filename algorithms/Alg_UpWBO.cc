@@ -891,7 +891,7 @@ StatusCode UpWBO::weightSearch() {
       nbSatisfiable++;
     
       uint64_t newCost = computeCostModel(solver->model);
-        if (newCost < ubCost){
+        if (newCost <= ubCost){
           saveModel(solver->model);
           printBound(newCost);
           ubCost = newCost;
@@ -984,7 +984,7 @@ StatusCode UpWBO::normalSearch() {
       if (res == l_True){
         nbSatisfiable++;
         uint64_t newCost = computeCostModel(solver->model);
-        if (newCost < ubCost){
+        if (newCost <= ubCost){
           saveModel(solver->model);
           printBound(newCost);
           ubCost = newCost;
