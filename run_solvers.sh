@@ -101,7 +101,7 @@ run_solvers_without_UP(){
 
 run_solvers(){
     data_dir=$dataset/$family
-    results_dir="results/"$family
+    results_dir="logs/"$family
     # pwcnfs    
     run_solvers_with_UP
     # wcnfs
