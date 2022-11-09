@@ -145,7 +145,7 @@ int main(int argc, char **argv) {
   printf(
       "c\nc UpMax:\t User partitioning for MaxSAT -- based on %s (%s version)\n",
       SATVER, VER);
-  printf("c Version:\t February 2022\n");
+  printf("c Version:\t October 2022\n");
   printf("c Authors:\t Pedro Orvalho, Vasco Manquinho,  Ruben Martins\n");
   printf("c Contact:\t rubenm@andrew.cmu.edu\n");
   try {
