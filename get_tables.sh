@@ -39,14 +39,14 @@ print_table(){
 	  fi
 	  line=$line","$num_instances_solved
       done
-      echo $line"," | tee $table
+      echo $line | tee $table
   done	
 }    
 
 table=$tables_dir/"seating-assignment.csv"
 rm $table
-echo ",,,,Seating Assignment,,,," | tee $table
-echo ",,User Part,,,Graph Part.,,," | tee $table
+echo ",,,,Seating Assignment,,," | tee $table
+echo ",,User Part,,,Graph Part.,," | tee $table
 echo "Solver,No Part.,Table,Tag,VIG,CVIG,RES,Random" | tee $table
 parts=("wcnf" "table" "tag" "vig" "cvig" "res" "random")
 family="seating-assignment"
@@ -58,8 +58,8 @@ echo
 
 table=$tables_dir/"minimum-sum-coloring.csv"
 rm $table
-echo ",,,,Minimum Sum Coloring,,,," | tee $table
-echo ",,User Part,,,Graph Part.,,," | tee $table
+echo ",,,,Minimum Sum Coloring,,," | tee $table
+echo ",,User Part,,,Graph Part.,," | tee $table
 echo "Solver,No Part.,Vertex,Color,VIG,CVIG,RES,Random" | tee $table
 parts=("wcnf" "vertex" "color" "vig" "cvig" "res" "random")
 family="minimum-sum-coloring"

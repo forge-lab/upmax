@@ -29,3 +29,9 @@ echo "Printing tables (Table 1 and Table 2)"
 echo
 echo "Tables saved sucessfully in tables/ directory"
 
+echo "Getting the plots and their csv files"
+./get_plots.sh
+echo
+echo
+
+echo "All done."
