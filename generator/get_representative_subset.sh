@@ -20,10 +20,19 @@ msc_dir=$data_dir/"representative_subset/minimum-sum-coloring"
 sa_dir=$data_dir/"representative_subset/seating-assignment"
 
 n_instances=1000
-for((i=1; i<=$n_instances; i=i+50))
+## 10% of the evaluation dataset dataset, at most 26 days of computations
+# for((i=1; i<=$n_instances; i=i+50))
+## 2 instances (148 runs)
+# for((i=1; i<=$n_instances; i=i+500))
+## 1% of the evaluation dataset (740 runs), at most 3 days of computations
+for((i=1; i<=$n_instances; i=i+100))
 do
-    # currently we are collecting 10% of the initial dataset.
-    nums=$(shuf -i $i-$((i+49)) -n5)
+    ## currently we are collecting 10% of the initial dataset.
+    # nums=$(shuf -i $i-$((i+49)) -n5)
+    ## to collect only 2 instances, which will correspond to 148 runs
+    # nums=$(shuf -i $i-$((i+499)) -n1)        
+    ## currently we are collecting 1% of the initial dataset.
+    nums=$(shuf -i $i-$((i+99)) -n1)
     instances=($nums)
     for((j=0;j<${#instances[@]};j++));
     do
