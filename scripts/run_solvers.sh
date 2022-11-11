@@ -11,7 +11,7 @@
 # To use only the representative subset of our evaluation dataset (100 instances) and a timeout of 300s
 dataset=$1
 wl=$2
-mem=8192
+mem=8000
 
 ## Uncoment below in order to use our entire evaluation dataset and the timeout used in our paper (1800s)
 # dataset="evaluation_dataset"
@@ -33,23 +33,23 @@ run_solvers_with_UP(){
 	    xz -cdk $f > maxsat.pwcnf
 	    ## MSU3
 	    output=$output_dir"/MSU3/"$i_name	    
-	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=1 -upmax maxsat.pwcnf
+	    ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=1 -upmax maxsat.pwcnf
 	    
 	    ## WBO
 	    output=$output_dir"/WBO/"$i_name
-	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=0 -upmax maxsat.pwcnf
+	    ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=0 -upmax maxsat.pwcnf
 	    
 	    ## OLL
 	    output=$output_dir"/OLL/"$i_name
-	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=2 -upmax maxsat.pwcnf
+	    ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=2 -algorithm=2 -upmax maxsat.pwcnf
 	    
 	    ## RC2
 	    output=$output_dir"/RC2/"$i_name
-	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upRC2.py -f maxsat.pwcnf
+	    ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upRC2.py -f maxsat.pwcnf
 	    
 	    ## Hitman
 	    output=$output_dir"/Hitman/"$i_name
-	    ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upHitman.py -f maxsat.pwcnf	    
+	    ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upHitman.py -f maxsat.pwcnf	    
 	    
 	    rm -f maxsat.pwcnf
 	done
@@ -68,31 +68,31 @@ run_solvers_without_UP(){
      xz -cdk $f > maxsat.wcnf
      ## MSU3
      output=$output_dir"/MSU3/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=1 maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=1 maxsat.wcnf
      
      ## WBO
      output=$output_dir"/WBO/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=0 maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=0 maxsat.wcnf
 	    
      ## OLL
      output=$output_dir"/OLL/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=2 maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UpMax/bin/upmax -formula=0 -algorithm=2 maxsat.wcnf
 	    
      ## RC2
      output=$output_dir"/RC2/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upRC2.py --wcnf maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upRC2.py --wcnf maxsat.wcnf
 	    
      ## Hitman
      output=$output_dir"/Hitman/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upHitman.py --wcnf maxsat.wcnf	    
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem python3 upPySAT/upHitman.py --wcnf maxsat.wcnf	    
 
      ## MaxHS
      output=$output_dir"/MaxHS/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/MaxHS/bin/maxhs -no-printOptions -printSoln -verb=0 maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/MaxHS/bin/maxhs -no-printOptions -printSoln -verb=0 maxsat.wcnf
 
      ## UWrMaxSAT
      output=$output_dir"/UWrMaxSAT/"$i_name
-     ./run --timestamp -d 10 -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UWrMaxSAT/bin/uwrmaxsat -v0 -no-sat -no-bin -m -bm maxsat.wcnf
+     ./run --timestamp -o $output".out" -v $output".var" -w $output".wat" -C $wl -W $wl -M $mem ./solvers/UWrMaxSAT/bin/uwrmaxsat -v0 -no-sat -no-bin -m -bm maxsat.wcnf
 
      rm -f maxsat.wcnf
    done  

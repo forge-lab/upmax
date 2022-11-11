@@ -19,15 +19,15 @@ family="seating-assignment"
 
 echo "Cactus plot SA"
 plot_name="seating-cactus"
-python3 scripts/mkplot/mkplot.py -p cactus -b pdf --save-to $plots_dir/$family/$plot_name".pdf" --shape squared --ylabel="Time (s)" --xlabel="\#Instances Solved" --timeout=$timeout --lloc="outside left" --xmax=800 $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p cactus -b png --save-to $plots_dir/$family/$plot_name".png" --shape squared --ylabel="Time (s)" --xlabel="\#Instances Solved" --timeout=$timeout --lloc="outside left" --xmax=10 $plots_dir/$family/$plot_name".csv" 2&> /dev/null
 
 echo "Scatter plot MSU3 No Part. vs Table-based Partitions"
 plot_name="seating-scatter-MSU3"
-python3 scripts/mkplot/mkplot.py -p scatter -b pdf  --ylog --xlog --save-to  $plots_dir/$family/$plot_name".pdf" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p scatter -b png  --ylog --xlog --save-to  $plots_dir/$family/$plot_name".png" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
 
 echo "Scatter plot WBO No Part. vs Tag-based Partitions"
 plot_name="seating-scatter-WBO"
-python3 scripts/mkplot/mkplot.py -p scatter -b pdf  --ylog --xlog --save-to $plots_dir/$family/$plot_name".pdf" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p scatter -b png  --ylog --xlog --save-to $plots_dir/$family/$plot_name".png" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
 
 echo
 echo
@@ -38,12 +38,12 @@ family="minimum-sum-coloring"
 
 echo "Cactus plot MSC"
 plot_name="msc-cactus"
-python3 scripts/mkplot/mkplot.py -p cactus -b pdf --save-to $plots_dir/$family/$plot_name".pdf" --shape squared --ylabel="Time (s)" --xlabel="\#Instances Solved" --timeout=$timeout --lloc="outside left" --xmax=1000 $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p cactus -b png --save-to $plots_dir/$family/$plot_name".png" --shape squared --ylabel="Time (s)" --xlabel="\#Instances Solved" --timeout=$timeout --lloc="outside left" --xmax=10 $plots_dir/$family/$plot_name".csv" 2&> /dev/null
 
 echo "Scatter plot OLL No Part. vs RES Partitioning"
 plot_name="msc-scatter-OLL"
-python3 scripts/mkplot/mkplot.py -p scatter -b pdf  --ylog --xlog --save-to $plots_dir/$family/$plot_name".pdf" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p scatter -b png  --ylog --xlog --save-to $plots_dir/$family/$plot_name".png" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
 
 echo "Scatter plot WBO No Part. vs RES Partitioning"
 plot_name="msc-scatter-WBO"
-python3 scripts/mkplot/mkplot.py -p scatter -b pdf  --ylog --xlog --save-to  $plots_dir/$family/$plot_name".pdf" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null
+python3 scripts/mkplot/mkplot.py -p scatter -b png  --ylog --xlog --save-to  $plots_dir/$family/$plot_name".png" --xmin=0.1 --shape squared --timeout=$timeout --lloc=" left" $plots_dir/$family/$plot_name".csv" 2&> /dev/null

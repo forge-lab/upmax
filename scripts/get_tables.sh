@@ -31,7 +31,7 @@ print_table(){
 	  num_instances_solved="-"
 	  if [ -f "$output_file" ]; then
 	      # number of timeouts
-	      num_timeouts=$(grep ,$timeout, $output_file | wc -l)
+	      num_timeouts=$(grep ,$timeout $output_file | wc -l)
 	      # number of instances not solved (num_timeouts + 1 - the header of the csv file)
 	      not_solved=$((num_timeouts+1))
 	      num_lines=$(cat $output_file | wc -l)
@@ -39,7 +39,7 @@ print_table(){
 	  fi
 	  line=$line","$num_instances_solved
       done
-      echo $line | tee $table
+      echo $line | tee -a $table
   done	
 }    
 
@@ -50,9 +50,9 @@ fi
 echo
 echo "Seating Assignment Problem"
 echo
-echo ",,,,Seating Assignment,,," | tee $table
-echo ",,User Part,,,Graph Part.,," | tee $table
-echo "Solver,No Part.,Table,Tag,VIG,CVIG,RES,Random" | tee $table
+echo ",,,,Seating Assignment,,," | tee -a $table
+echo ",,User Part,,,Graph Part.,," | tee -a $table
+echo "Solver,No Part.,Table,Tag,VIG,CVIG,RES,Random" | tee -a $table
 parts=("wcnf" "table" "tag" "vig" "cvig" "res" "random")
 family="seating-assignment"
 print_table
@@ -69,9 +69,9 @@ echo
 echo
 echo "Minimum Sum Coloring (MSC) Problem"
 echo
-echo ",,,,Minimum Sum Coloring,,," | tee $table
-echo ",,User Part,,,Graph Part.,," | tee $table
-echo "Solver,No Part.,Vertex,Color,VIG,CVIG,RES,Random" | tee $table
+echo ",,,,Minimum Sum Coloring,,," | tee -a $table
+echo ",,User Part,,,Graph Part.,," | tee -a $table
+echo "Solver,No Part.,Vertex,Color,VIG,CVIG,RES,Random" | tee -a $table
 parts=("wcnf" "vertex" "color" "vig" "cvig" "res" "random")
 family="minimum-sum-coloring"
 print_table
