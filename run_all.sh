@@ -17,7 +17,7 @@ dataset=$1
 timeout=$2
 if [[ $dataset == "" ]];
 then
-    dataset="representative_subset_100_instances"
+    dataset="representative_subset_10_instances"
 fi
 if [[ $timeout == "" ]];
 then

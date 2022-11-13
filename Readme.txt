@@ -42,8 +42,13 @@ cd UpMax
 
 bash run_all.sh representative_subset_1_instance 180
 
-- To run the representative subset of our dataset 10% (100 instances of each MaxSAT problem): (OUR RECOMMENDATION) 
-(This may take around 12 hours to process using the VM; StarExec took us around 8 hours.)
+- To run the representative subset of our dataset 1% (10 instances of each MaxSAT problem): (OUR RECOMMENDATION) 
+(This may take around 12/13 hours to process using the VM; StarExec took us around 10 hours.)
+
+bash run_all.sh representative_subset_10_instances 180
+
+- To run the representative subset of our dataset 10% (100 instances of each MaxSAT problem):
+(This may take around 8 days to process using the VM; StarExec took us around 7 days.)
 
 bash run_all.sh representative_subset_100_instances 180
 
