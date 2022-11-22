@@ -38,25 +38,35 @@ All the following commands must be run from the UpMax directory, which can be ac
 
 cd UpMax
 
+******* OPTION #1 ******* 
+
 - To run one instance:
+(This should take around 1 minute to process)
 
 bash run_all.sh representative_subset_1_instance 180
+
+******* OPTION #2 ******* 
 
 - To run the representative subset of our dataset 1% (10 instances of each MaxSAT problem): (OUR RECOMMENDATION) 
 (This may take around 12/13 hours to process using the VM; StarExec took us around 10 hours of CPU time.)
 
 bash run_all.sh representative_subset_10_instances 180
 
+******* OPTION #3 ******* 
+
 - To run the representative subset of our dataset 10% (100 instances of each MaxSAT problem):
 (This may take around 8 days to process using the VM; StarExec took us around 7 days of CPU time.)
 
 bash run_all.sh representative_subset_100_instances 180
+
+******* OPTION #4 ******* 
 
 - To run all benchmarks and reproduce the results section in the paper, use the script run_all.sh: (takes around 613 days if not run in StarExec).
 
 unzip evaluation_dataset
 ./run_all.sh evaluation_dataset 1800
 
+************************** 
 
 This command will run all instances with a timeout of 1800 seconds (30min) and store the resulting logs in "results/logs/"
 
