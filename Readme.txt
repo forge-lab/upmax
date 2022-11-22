@@ -28,7 +28,7 @@ And we evaluate two MaxSAT problems (2x37000), so our experiments correspond to 
 
 We used StarExec [40] with a timeout of 1800 seconds and a memory limit of 32 GB for each instance. Our experiments with a timeout of 1800s (30 min) took us ~52998314 seconds, i.e., 613 days if run sequentially. However, we run this using multiple machines in a cluster.
 
-We propose to evaluate our artifact on a representative subset of our framework that contains 10% of our instances (100 for each problem, 7400 runs). Furthermore, we propose to use a timeout of 180s (3min).
+We propose to evaluate our artifact on a representative subset of our framework that contains 1% of our instances (10 for each problem, 740 runs). Furthermore, we propose to use a timeout of 180s (3min).
 
 
 -- REPRODUCIBILITY INSTRUCTIONS:
@@ -43,12 +43,12 @@ cd UpMax
 bash run_all.sh representative_subset_1_instance 180
 
 - To run the representative subset of our dataset 1% (10 instances of each MaxSAT problem): (OUR RECOMMENDATION) 
-(This may take around 12/13 hours to process using the VM; StarExec took us around 10 hours.)
+(This may take around 12/13 hours to process using the VM; StarExec took us around 10 hours of CPU time.)
 
 bash run_all.sh representative_subset_10_instances 180
 
 - To run the representative subset of our dataset 10% (100 instances of each MaxSAT problem):
-(This may take around 8 days to process using the VM; StarExec took us around 7 days.)
+(This may take around 8 days to process using the VM; StarExec took us around 7 days of CPU time.)
 
 bash run_all.sh representative_subset_100_instances 180
 
@@ -152,6 +152,7 @@ cd our-results/
 
 Although the matplotlib must be installed, as explained in the ADDITIONAL REQUIREMENTS section.
 
-The source code for UpMax is also publicly available at https://github.com/forge-lab/upmax 
-This repository should not be used to reproduce the artifact but it contains the current version of the tool and will continue to be developed and shared with the research community.
+Furthermore, the artifact also contains the logs from the run just using the representative subset (representative_subset_10_instances) in the zip: tacas23-artifact-eval-logs.zip. These results were obtained using an Intel(R) Xeon(R) Silver 4110 CPU @ 2.10GHz with a timeout of 180s and a memory limit of 8 Gb.
 
+The source code for UpMax is also publicly available at https://github.com/forge-lab/upmax 
+This repository should not be used to reproduce the artifact, but it contains the current version of the tool and will continue to be developed and shared with the research community.
