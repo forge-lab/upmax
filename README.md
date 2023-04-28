@@ -65,7 +65,7 @@ User partitioning.
 
 For instance, consider that you want to solver the formula ``filename.pwcnf`` with algorithm ``oll`` using the ``upmax`` option then you should run **UpMax** as follows:
 
-``./upmax -algorithm=2 -upmax filename.pwcnf``
+``./upmax -algorithm=2 -formula=2 -upmax filename.pwcnf``
 
 ## UpPySAT
 
